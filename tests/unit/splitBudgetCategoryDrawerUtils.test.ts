@@ -89,14 +89,14 @@ describe('splitDrawerIsValid', () => {
 describe('row mutations', () => {
   it('updateSplitAmountAt', () => {
     const rows = [row({ amount_debit: 5 }), row({ id: '2', amount_debit: 5 })]
-    expect(updateSplitAmountAt(rows, 0, 99)[0].amount_debit).toBe(99)
-    expect(rows[0].amount_debit).toBe(5)
+    expect(updateSplitAmountAt(rows, 0, 99)[0]!.amount_debit).toBe(99)
+    expect(rows[0]!.amount_debit).toBe(5)
   })
 
   it('updateSplitCategoryAt', () => {
     const rows = [row()]
-    expect(updateSplitCategoryAt(rows, 0, 'X')[0].budget_category_id).toBe('X')
-    expect(updateSplitCategoryAt(rows, 0, null)[0].budget_category_id).toBe('')
+    expect(updateSplitCategoryAt(rows, 0, 'X')[0]!.budget_category_id).toBe('X')
+    expect(updateSplitCategoryAt(rows, 0, null)[0]!.budget_category_id).toBe('')
   })
 
   it('appendSplitRow', () => {

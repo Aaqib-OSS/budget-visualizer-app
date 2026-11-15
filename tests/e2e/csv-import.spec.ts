@@ -43,9 +43,9 @@ test.describe('CSV import', () => {
     await expect(dataImportPage.successCard).toBeVisible()
     await expect(dataImportPage.successFilename).toHaveText('2025_02.csv')
     expect(puts).toHaveLength(1)
-    expect(new URL(puts[0].url()).pathname).toBe('/imports/e2e-user/2025_02.csv')
-    expect(await puts[0].headerValue('content-type')).toBe('text/csv')
-    expect(puts[0].postData()).toBe(CSV)
+    expect(new URL(puts[0]!.url()).pathname).toBe('/imports/e2e-user/2025_02.csv')
+    expect(await puts[0]!.headerValue('content-type')).toBe('text/csv')
+    expect(puts[0]!.postData()).toBe(CSV)
   })
 
   test('uploads as text/csv when the browser reports text/plain', async ({ page, dataImportPage }) => {
@@ -66,7 +66,7 @@ test.describe('CSV import', () => {
     expect((await createImport).postDataJSON()).toEqual({ filename: '2025_03.csv', contentType: 'text/csv' })
     await expect(dataImportPage.successCard).toBeVisible()
     expect(puts).toHaveLength(1)
-    expect(await puts[0].headerValue('content-type')).toBe('text/csv')
+    expect(await puts[0]!.headerValue('content-type')).toBe('text/csv')
   })
 
   test('the CSP blocks an upload host missing from connect-src', async ({

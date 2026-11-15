@@ -27,10 +27,10 @@ describe('flattenWithBreadcrumb', () => {
     expect(flat).toHaveLength(5)
 
     expect(flat[0]).toEqual({ node: tree[0], breadcrumb: [] })
-    expect(flat[1]).toEqual({ node: tree[0].children![0], breadcrumb: ['Food'] })
-    expect(flat[2]).toEqual({ node: tree[0].children![1], breadcrumb: ['Food'] })
+    expect(flat[1]).toEqual({ node: tree[0]!.children![0], breadcrumb: ['Food'] })
+    expect(flat[2]).toEqual({ node: tree[0]!.children![1], breadcrumb: ['Food'] })
     expect(flat[3]).toEqual({
-      node: tree[0].children![1].children![0],
+      node: tree[0]!.children![1]!.children![0],
       breadcrumb: ['Food', 'Restaurants'],
     })
     expect(flat[4]).toEqual({ node: tree[1], breadcrumb: [] })

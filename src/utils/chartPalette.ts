@@ -21,7 +21,7 @@ function hexFromCanvas(cssColor: string): string | null {
   ctx.fillStyle = cssColor
   ctx.fillRect(0, 0, 1, 1)
   const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data
-  if (a === 0) return null
+  if (r === undefined || g === undefined || b === undefined || !a) return null
   const toHex = (n: number) => n.toString(16).padStart(2, '0')
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`
 }

@@ -18,7 +18,11 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const template = fixture.all[0]
+const template: RecurringSeries = (() => {
+  const [first] = fixture.all
+  if (!first) throw new Error('The recurring story fixture has no series')
+  return first
+})()
 
 /** A copy of a fixture series with its own category, monthly figure and status. */
 function spend(

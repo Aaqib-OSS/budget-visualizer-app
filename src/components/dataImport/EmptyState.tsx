@@ -16,8 +16,8 @@ export default function EmptyState(props: { onFileChosen: (file: File) => void }
   let inputRef: HTMLInputElement | undefined
 
   const handleFiles = (files: FileList | null) => {
-    if (!files || files.length === 0) return
-    props.onFileChosen(files[0])
+    const file = files?.[0]
+    if (file) props.onFileChosen(file)
   }
 
   const openPicker = () => inputRef?.click()

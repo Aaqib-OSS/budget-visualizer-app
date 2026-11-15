@@ -228,7 +228,7 @@ describe('DataImportPage', () => {
       })
 
       // A rejects late — must NOT flip B's UI to error.
-      rejectFns[0](Object.assign(new Error('A canceled late'), { name: 'CanceledError' }))
+      rejectFns[0]!(Object.assign(new Error('A canceled late'), { name: 'CanceledError' }))
       // Give microtasks a chance to flush.
       await Promise.resolve()
       await Promise.resolve()
@@ -236,7 +236,7 @@ describe('DataImportPage', () => {
       expect(screen.getByTestId('data-import-uploading-card')).toBeInTheDocument()
 
       // B still resolves successfully.
-      resolveFns[1](null)
+      resolveFns[1]!(null)
       await waitFor(() => {
         expect(screen.getByTestId('data-import-success-card')).toBeInTheDocument()
       })

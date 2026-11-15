@@ -11,7 +11,7 @@ describe('LatencyBars', () => {
     expect(bars).toHaveLength(4)
     const over = bars.filter((b) => b.getAttribute('data-over') === 'true')
     expect(over).toHaveLength(1)
-    expect(over[0].getAttribute('class')).toContain('fill-negative')
+    expect(over[0]!.getAttribute('class')).toContain('fill-negative')
     for (const b of bars.filter((x) => x !== over[0])) expect(b.getAttribute('class')).toContain('fill-brand')
     expect(screen.getByRole('img').getAttribute('aria-label')).toContain('900 ms')
     expectNoLiteralColours(container.innerHTML)

@@ -75,16 +75,19 @@ export function apportionTenths(shares: number[]): number[] {
  */
 function largestRemainder(values: number[], total: number): number[] {
   const floors = values.map((v) => Math.floor(v))
-  let leftover = total - floors.reduce((a, b) => a + b, 0)
-  const byRemainder = values
+  const leftover = Math.max(0, total - floors.reduce((a, b) => a + b, 0))
+  const n = values.length
+  if (n === 0) return floors
+
+  // Deal the leftover round-robin in remainder order: every value gets `leftover / n` whole
+  // rounds, and the `leftover % n` biggest remainders get one more.
+  const extra = new Map<number, number>()
+  values
     .map((v, index) => ({ index, remainder: v - Math.floor(v) }))
     .sort((a, b) => b.remainder - a.remainder || a.index - b.index)
+    .forEach(({ index }, rank) => extra.set(index, Math.floor(leftover / n) + (rank < leftover % n ? 1 : 0)))
 
-  const units = [...floors]
-  for (let i = 0; leftover > 0 && byRemainder.length > 0; i = (i + 1) % byRemainder.length, leftover--) {
-    units[byRemainder[i].index] += 1
-  }
-  return units
+  return floors.map((f, i) => f + (extra.get(i) ?? 0))
 }
 
 /**
@@ -112,21 +115,22 @@ export function segmentWidths(units: number[]): number[] {
   const covered = Math.min(shortfall, capacity)
   const lift = covered / shortfall
 
-  const targets = units.map((u, i) => (need[i] > 0 ? u + need[i] * lift : u))
+  const targets = units.map((u) => u + Math.max(0, MIN_SEGMENT_UNITS - u) * lift)
+  const targetAt = (i: number) => targets[i] ?? 0
 
   // Take `covered` from the donors in proportion to width. A donor that would drop below the
   // floor is held at it and the rest is re-spread over the others.
   let remaining = covered
-  let donors = Array.from(units.keys()).filter((i) => units[i] > MIN_SEGMENT_UNITS)
+  let donors = units.flatMap((u, i) => (u > MIN_SEGMENT_UNITS ? [i] : []))
   while (remaining > 1e-9 && donors.length > 0) {
-    const weight = donors.reduce((sum, i) => sum + targets[i], 0)
-    const pinned = donors.filter((i) => targets[i] - (remaining * targets[i]) / weight < MIN_SEGMENT_UNITS)
+    const weight = donors.reduce((sum, i) => sum + targetAt(i), 0)
+    const pinned = donors.filter((i) => targetAt(i) - (remaining * targetAt(i)) / weight < MIN_SEGMENT_UNITS)
     if (pinned.length === 0) {
-      for (const i of donors) targets[i] -= (remaining * targets[i]) / weight
+      for (const i of donors) targets[i] = targetAt(i) - (remaining * targetAt(i)) / weight
       break
     }
     for (const i of pinned) {
-      remaining -= targets[i] - MIN_SEGMENT_UNITS
+      remaining -= targetAt(i) - MIN_SEGMENT_UNITS
       targets[i] = MIN_SEGMENT_UNITS
     }
     donors = donors.filter((i) => !pinned.includes(i))
@@ -172,17 +176,18 @@ export default function RecurringCategoryBreakdown(props: { series: RecurringSer
     const widths = segmentWidths(units)
     let nextColour = 0
     let offset = 0
-    return burns.map((row, i) => {
-      const style = row.category === UNCATEGORIZED ? NEUTRAL : PALETTE[nextColour++ % PALETTE.length]
+    return burns.map((row, i): BreakdownRow => {
+      const style =
+        row.category === UNCATEGORIZED ? NEUTRAL : (PALETTE[nextColour++ % PALETTE.length] ?? NEUTRAL)
       const placed = {
         category: row.category,
         amount: row.amount,
-        units: units[i],
-        width: widths[i],
+        units: units[i] ?? 0,
+        width: widths[i] ?? 0,
         offset,
         style,
       }
-      offset += widths[i]
+      offset += placed.width
       return placed
     })
   })

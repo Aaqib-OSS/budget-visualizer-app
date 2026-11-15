@@ -13,6 +13,7 @@
  * per-series figures, so a headline can never disagree with the rows beneath it.
  */
 import type { Frequency, RecurringCadence, RecurringSeries } from '@types'
+import { lastTwo } from '@utils/lastTwo'
 
 export type TriageState = 'price-up' | 'price-down' | 'late' | 'conflict' | 'stopped' | null
 
@@ -131,9 +132,10 @@ function lastPriceStep(s: RecurringSeries): number {
   if (history.length < 2) return 0
   // ISO calendar dates sort lexicographically; do not trust the array order.
   const ordered = [...history].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
-  const previous = roundCents(ordered[ordered.length - 2].amount)
-  const latest = roundCents(ordered[ordered.length - 1].amount)
-  return Math.sign(latest - previous)
+  const step = lastTwo(ordered)
+  if (!step) return 0
+  const [previous, latest] = step
+  return Math.sign(roundCents(latest.amount) - roundCents(previous.amount))
 }
 
 /**
