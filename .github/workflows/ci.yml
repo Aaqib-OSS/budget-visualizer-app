@@ -48,7 +48,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      # Builds every project in tsconfig.json's `references`: app, node configs,
+      # Builds every project in tsconfig.json's `references`: app, node configs, .storybook,
       # unit tests, and e2e. Vitest does not typecheck, and the E2E webServer runs
       # `vite build` alone, so this job is the only typecheck gate.
       - run: bun run typecheck

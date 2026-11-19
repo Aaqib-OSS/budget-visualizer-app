@@ -181,7 +181,7 @@ describe('RecurringTriageLane', () => {
     const list = [priceUp(), priceDown(), late(), cadenceConflict(), stopped(), makeSeries()]
     renderLane(list)
     expect(screen.getAllByTestId(/^recurring-triage-card-/)).toHaveLength(5)
-    expect(screen.queryByTestId(`recurring-triage-card-${list[5].id}`)).toBeNull()
+    expect(screen.queryByTestId(`recurring-triage-card-${list[5]!.id}`)).toBeNull()
     expect(screen.getByRole('heading', { name: /needs review/i })).toBeInTheDocument()
   })
 
@@ -250,8 +250,8 @@ describe('RecurringTriageLane', () => {
       ]
       list.forEach((s, i) => {
         const classes = within(card(s)).getByTestId('recurring-triage-badge').className.split(/\s+/)
-        expect(classes).toContain(expected[i][0])
-        expect(classes).toContain(expected[i][1])
+        expect(classes).toContain(expected[i]![0])
+        expect(classes).toContain(expected[i]![1])
       })
     })
 

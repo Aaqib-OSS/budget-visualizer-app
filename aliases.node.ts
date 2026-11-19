@@ -34,11 +34,11 @@ export function tsconfigPathAliases(): AliasEntry[] {
       throw new Error(`tsconfig.paths.json: "${specifier}" has no target path`)
     }
 
-    // Wildcard form, e.g. "@api/*": ["src/api/*"]. Anchor the match so a
+    // Wildcard form, e.g. "@api/*": ["./src/api/*"]. Anchor the match so a
     // package named "@apifoo" can't be captured by the "@api" alias.
     if (specifier.endsWith('/*')) {
       const prefix = specifier.slice(0, -1) // "@api/*" -> "@api/"
-      const targetDir = target.slice(0, -2) // "src/api/*" -> "src/api"
+      const targetDir = target.slice(0, -2) // "./src/api/*" -> "./src/api"
       // Keep the trailing separator: the regex consumes "@api/", so the
       // replacement must supply the "/" back or "@api/httpClient" resolves to
       // "src/apihttpClient".
@@ -48,7 +48,7 @@ export function tsconfigPathAliases(): AliasEntry[] {
       }
     }
 
-    // Exact form, e.g. "@types": ["src/types/index.ts"].
+    // Exact form, e.g. "@types": ["./src/types/index.ts"].
     return {
       find: new RegExp(`^${escapeRegExp(specifier)}$`),
       replacement: path.resolve(rootDir, target),

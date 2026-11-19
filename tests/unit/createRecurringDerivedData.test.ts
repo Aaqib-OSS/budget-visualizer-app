@@ -533,8 +533,8 @@ describe('burnByCategory', () => {
       makeSeries({ budgetCategory: 'A', monthlyNormalized: 1 }),
       makeSeries({ budgetCategory: 'B', monthlyNormalized: 2 }),
     ])
-    expect(rows[0].pct).toBeCloseTo(66.666666667, 8) // 66.67 would fail
-    expect(rows[1].pct).toBeCloseTo(33.333333333, 8) // 33.33 would fail
+    expect(rows[0]!.pct).toBeCloseTo(66.666666667, 8) // 66.67 would fail
+    expect(rows[1]!.pct).toBeCloseTo(33.333333333, 8) // 33.33 would fail
   })
 
   it('returns no rows, and no NaN pct, when there is nothing to total', () => {

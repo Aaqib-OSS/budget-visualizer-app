@@ -16,6 +16,7 @@ import { getPeriodLabel } from '@api/helpers/formatPeriodLabels'
 import { Button } from '@components/ui/button'
 import ClearFilterButton from '@components/shared/ClearFilterButton'
 import { getTransactionsTableSelectedValue } from '@components/transactions/table/transactionsTableSelectedValue'
+import { isoDatePart } from '@utils/isoDatePart'
 import PeriodNavigationGroup from './PeriodNavigationGroup'
 
 export default function PeriodHeader(props: { onAddTransaction?: () => void }): JSX.Element {
@@ -28,7 +29,7 @@ export default function PeriodHeader(props: { onAddTransaction?: () => void }): 
   const periodList = createMemo((): string[] => {
     const vm = transactionsState.viewMode
     if (vm === 'day') {
-      return (daysQ.data ?? []).map((d) => String(d.day).split('T')[0]!)
+      return (daysQ.data ?? []).map((d) => isoDatePart(String(d.day)))
     }
     if (vm === 'week') {
       return (weeksQ.data ?? []).map((w) => w.week_year)

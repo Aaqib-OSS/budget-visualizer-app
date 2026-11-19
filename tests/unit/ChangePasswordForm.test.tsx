@@ -150,17 +150,17 @@ describe('ChangePasswordForm', () => {
     renderForm()
     const [curToggle, newToggle, cfToggle] = screen.getAllByRole('button', { name: 'Show password' })
 
-    fireEvent.click(curToggle)
+    fireEvent.click(curToggle!)
     expect(current().type).toBe('text')
     expect(next().type).toBe('password')
 
-    fireEvent.click(newToggle)
+    fireEvent.click(newToggle!)
     expect(next().type).toBe('text')
 
-    fireEvent.click(cfToggle)
+    fireEvent.click(cfToggle!)
     expect(confirm().type).toBe('text')
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Hide password' })[0])
+    fireEvent.click(screen.getAllByRole('button', { name: 'Hide password' })[0]!)
     expect(current().type).toBe('password')
   })
 

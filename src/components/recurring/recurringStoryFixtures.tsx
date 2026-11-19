@@ -20,6 +20,9 @@ const MS_PER_DAY = 86_400_000
 
 function parts(isoDate: string): { year: number; month: number; day: number } {
   const [year, month, day] = isoDate.split('-').map(Number)
+  if (year === undefined || month === undefined || day === undefined) {
+    throw new Error(`Fixture date is not YYYY-MM-DD: ${isoDate}`)
+  }
   return { year, month, day }
 }
 
@@ -100,7 +103,9 @@ function build(spec: SeriesSpec, detectedAt: string): RecurringSeries {
     date: stepBack(lastDate, cadence, amounts.length - 1 - i),
     amount,
   }))
-  const latestAmount = amounts[amounts.length - 1]
+  const [first] = history
+  const latestAmount = amounts.at(-1)
+  if (!first || latestAmount === undefined) throw new Error(`Fixture series ${spec.id} has no amounts`)
   return {
     id: spec.id,
     memoId: 100 + spec.id,
@@ -109,7 +114,7 @@ function build(spec: SeriesSpec, detectedAt: string): RecurringSeries {
     cadence,
     confidence: spec.confidence,
     occurrenceCount: amounts.length,
-    firstDate: history[0].date,
+    firstDate: first.date,
     lastDate,
     nextExpectedDate: stepBack(lastDate, cadence, -1),
     latestAmount,

@@ -70,7 +70,7 @@ describe('RecurringCategoryBreakdown', () => {
       ])
       expect(segments().map((s) => s.getAttribute('data-category'))).toEqual(['Housing', 'Food', 'Software'])
       expect(rows().map((r) => r.getAttribute('data-category'))).toEqual(['Housing', 'Food', 'Software'])
-      const food = rows()[1]
+      const food = rows()[1]!
       expect(within(food).getByTestId('recurring-breakdown-name')).toHaveTextContent('Food')
       // Two Food series are one category: $300.00 + $100.00.
       expect(within(food).getByTestId('recurring-breakdown-amount')).toHaveTextContent('$400.00')
@@ -87,10 +87,10 @@ describe('RecurringCategoryBreakdown', () => {
       renderBreakdown([inCategory(null, 9.99), inCategory(null, 5), inCategory('Software', 20)])
       const uncategorized = rows().filter((r) => r.getAttribute('data-category') === 'Uncategorized')
       expect(uncategorized).toHaveLength(1)
-      expect(within(uncategorized[0]).getByTestId('recurring-breakdown-name')).toHaveTextContent(
+      expect(within(uncategorized[0]!).getByTestId('recurring-breakdown-name')).toHaveTextContent(
         'Uncategorized',
       )
-      expect(within(uncategorized[0]).getByTestId('recurring-breakdown-amount')).toHaveTextContent('$14.99')
+      expect(within(uncategorized[0]!).getByTestId('recurring-breakdown-amount')).toHaveTextContent('$14.99')
       expect(segments().filter((s) => s.getAttribute('data-category') === 'Uncategorized')).toHaveLength(1)
       expect(rows()).toHaveLength(2)
     })
@@ -255,7 +255,7 @@ describe('RecurringCategoryBreakdown', () => {
       expect(drawn).toHaveLength(burns.length)
       expect(Math.round(drawn.reduce((a, b) => a + b, 0) * 10)).toBe(1000)
 
-      const errors = burns.map((row, i) => drawn[i] - row.pct)
+      const errors = burns.map((row, i) => drawn[i]! - row.pct)
       // A lifted sliver gains at most the floor itself (1 point).
       burns.forEach((row, i) => {
         if (row.pct < 1) expect(errors[i]).toBeLessThanOrEqual(1.0001)
@@ -266,25 +266,25 @@ describe('RecurringCategoryBreakdown', () => {
       // drawn) and the rest nothing. The six slivers need 3.3 points in all, so the largest still
       // carries most of it in absolute terms (about 2.4 points); what changes is that every
       // segment shares it instead of one.
-      const payers = burns.map((row, i) => ({ row, error: errors[i] })).filter(({ row }) => row.pct > 1.5)
+      const payers = burns.map((row, i) => ({ row, error: errors[i]! })).filter(({ row }) => row.pct > 1.5)
       expect(payers.length).toBeGreaterThan(3)
       for (const { row, error } of payers) {
         expect(error).toBeLessThanOrEqual(0.05) // never wider than true (tenths rounding aside)
         expect(Math.abs(error)).toBeLessThanOrEqual(0.036 * row.pct + 0.1) // 3.6% of itself plus one tenth of rounding
       }
       const [largest] = payers.sort((a, b) => b.row.pct - a.row.pct)
-      expect(Math.abs(largest.error)).toBeLessThan(2.6)
+      expect(Math.abs(largest!.error)).toBeLessThan(2.6)
 
       // And the list and label still show the true shares.
       const listed = displayedPcts().map(tenths)
       expect(listed.reduce((a, b) => a + b, 0)).toBe(1000)
-      expect(listed[0]).toBe(Math.round(burns[0].pct * 10))
+      expect(listed[0]).toBe(Math.round(burns[0]!.pct * 10))
     })
 
     it('draws a lone category as the whole bar', () => {
       renderBreakdown([inCategory('Housing', 1650), inCategory('Housing', 20)])
       expect(segments()).toHaveLength(1)
-      expect(widthOf(segments()[0])).toBe(100)
+      expect(widthOf(segments()[0]!)).toBe(100)
       expect(displayedPcts()).toEqual(['100.0%'])
     })
 

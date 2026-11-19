@@ -20,7 +20,8 @@ const { default: TransactionsTablePagination } =
   await import('@components/transactions/table/TransactionsTablePagination')
 
 const pager = () => screen.getByTestId('transactions-table-pagination')
-const [prev, next] = [0, 1].map((i) => () => pager().querySelectorAll('button')[i]!)
+const prev = () => pager().querySelectorAll('button')[0]!
+const next = () => pager().querySelectorAll('button')[1]!
 
 describe('TransactionsTablePagination', () => {
   beforeEach(() => {

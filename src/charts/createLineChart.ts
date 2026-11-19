@@ -87,8 +87,16 @@ export function createLineChart(
       const label = text.text()
       const [month, year] = label.split(' ')
       text.text('')
-      text.append('tspan').attr('x', 0).attr('dy', '0').text(month)
-      text.append('tspan').attr('x', 0).attr('dy', '1.2em').text(year)
+      text
+        .append('tspan')
+        .attr('x', 0)
+        .attr('dy', '0')
+        .text(month ?? '')
+      text
+        .append('tspan')
+        .attr('x', 0)
+        .attr('dy', '1.2em')
+        .text(year ?? '')
     })
   }
 

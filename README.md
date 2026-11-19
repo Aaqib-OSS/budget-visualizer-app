@@ -52,9 +52,18 @@ This project uses **[Bun](https://bun.sh)** to install dependencies, run the dev
 
 ```bash
 bun install
+cp .env.example .env   # then fill in VITE_APIGATEWAY_URL
+git config core.hooksPath .githooks   # optional, see Git hooks below
 ```
 
-### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
+## Environment
+
+Vite loads `.env` for both the client (`import.meta.env`) and `vite.config.ts` (`loadEnv`). See [`.env.example`](.env.example).
+
+| Variable                  | Used by                              | Purpose                                                                                                                                                                                                                                                                |
+| ------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_APIGATEWAY_URL`     | `src/constants.ts`, `vite.config.ts` | API Gateway stage URL (no `/api/v1`). Production calls `${VITE_APIGATEWAY_URL}/api/v1` and the build's CSP allowlists this origin in `connect-src`. Unset means a relative `/api/v1`. The dev server proxies `/api/v1` to it, with a built-in fallback URL when unset. |
+| `VITE_PROXY_LOCAL_LAMBDA` | `vite.config.ts` (dev only)          | `1` proxies `/api/v1` to a local resourceQuerier on `http://127.0.0.1:3000` (`sam local start-api`). If it isn't reachable, the app falls back to the gateway via `/api/gateway`.                                                                                      |
 
 ## Available Scripts
 
@@ -78,14 +87,35 @@ Runs the production build with [`rollup-plugin-visualizer`](https://github.com/b
 
 Serves the production build locally (useful for checking the built app before deploy).
 
+### Checks
+
+| Script                            | What it runs                                                                 |
+| --------------------------------- | ---------------------------------------------------------------------------- |
+| `bun run lint` / `lint:fix`       | ESLint over `src`, `tests`, and root configs                                 |
+| `bun run format` / `format:check` | Prettier write / check                                                       |
+| `bun run typecheck`               | `tsc -b`: the app, node configs, `.storybook/`, unit tests, and e2e projects |
+| `bun run prepush`                 | `lint` + `format:check` + `typecheck`, the same gates CI runs                |
+
+### Storybook
+
+```bash
+bun run storybook        # dev server on http://localhost:6006
+bun run build-storybook  # static build (CI builds it too)
+```
+
+Stories mock the API with MSW (`msw-storybook-addon`).
+
 ## Testing
 
 Unit and component tests use **Vitest** + **jsdom** + **@solidjs/testing-library**:
 
 ```bash
-bun run test        # single run
-bun run test:watch  # watch mode
+bun run test           # single run
+bun run test:watch     # watch mode
+bun run test:coverage  # with coverage
 ```
+
+Use `bun run test`, not `bun test` (that is Bun's own runner). The scripts pin `TZ=America/New_York` so date bugs that are invisible in UTC fail locally and in CI.
 
 End-to-end tests live under **`tests/e2e/`** and use **Playwright** against a production preview (`vite preview` on port 4173). Unit and component tests live under **`tests/unit/`**. The first Playwright run needs browsers installed once:
 
@@ -99,6 +129,17 @@ E2E tests stub `/api/v1/*` in the browser and seed `localStorage` so authenticat
 ```bash
 bun run test:all
 ```
+
+## Git hooks
+
+Tracked hooks live in `.githooks/`; enable them once per clone with `git config core.hooksPath .githooks`.
+
+- `pre-commit` runs `bun run test`.
+- `pre-push` runs `bun run prepush`.
+
+## CI
+
+`.github/workflows/ci.yml` runs **Lint & Format**, **Typecheck**, **Unit Tests**, and **E2E Tests**, which are required to merge into `main`, plus a Storybook build and a **SonarQube** scan on SonarCloud. The SonarCloud quality gate is advisory: the scan skips itself when `SONAR_TOKEN` is unavailable (fork and Dependabot PRs). See `CLAUDE.md` for why the job names must not change.
 
 ## Deployment
 
