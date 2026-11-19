@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite'
+import { visualizer } from 'rollup-plugin-visualizer'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import solid from 'vite-plugin-solid'
 import { tsconfigPathAliases } from './aliases.node'
@@ -102,6 +103,26 @@ function cspMetaTags(apiGatewayUrl: string): Plugin {
   }
 }
 
+/**
+ * Opt-in bundle treemap (`bun run analyze:bundle`), the Vite counterpart of
+ * `@next/bundle-analyzer`. Gated on `ANALYZE=true` so a normal build pays
+ * nothing for it. Written outside `dist/` so the report can never ship with a
+ * deploy; gzip and brotli sizes are what the browser actually downloads.
+ */
+function bundleAnalyzer(): Plugin[] {
+  if (process.env.ANALYZE !== 'true') return []
+  return [
+    visualizer({
+      filename: 'bundle-stats/index.html',
+      template: 'treemap',
+      title: 'budget-visualizer-app bundle',
+      gzipSize: true,
+      brotliSize: true,
+      open: !process.env.CI,
+    }) as Plugin,
+  ]
+}
+
 export default defineConfig(({ mode }) => {
   // Third arg '' loads every var, not just the VITE_-prefixed ones, so
   // VITE_PROXY_LOCAL_LAMBDA set in a `.env` file works the same as in the shell.
@@ -115,7 +136,7 @@ export default defineConfig(({ mode }) => {
   const apiV1Target = env.VITE_PROXY_LOCAL_LAMBDA === '1' ? LAMBDA_DEV_URL : proxyTarget
 
   return {
-    plugins: [tailwindcss(), solid(), cspMetaTags(apiGatewayUrl)],
+    plugins: [tailwindcss(), solid(), cspMetaTags(apiGatewayUrl), ...bundleAnalyzer()],
     server: {
       host: 'localhost',
       port: 5173,
