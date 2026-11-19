@@ -1,5 +1,6 @@
 import { createMemo, For, Show } from 'solid-js'
 import { formatUsdAbs } from '@utils/formatUsd'
+import { lastTwo } from '@utils/lastTwo'
 import type { RecurringAmountPoint } from '@types'
 
 const WIDTH = 80
@@ -40,9 +41,10 @@ function byDate(history: RecurringAmountPoint[]): RecurringAmountPoint[] {
 
 /** The last step, judged at cent resolution so float noise never reads as a price change. */
 function directionOf(ordered: RecurringAmountPoint[]): Direction {
-  if (ordered.length < 2) return 'flat'
+  const pair = lastTwo(ordered)
+  if (!pair) return 'flat'
   const cents = (p: RecurringAmountPoint) => Math.round(p.amount * 100)
-  const step = cents(ordered[ordered.length - 1]) - cents(ordered[ordered.length - 2])
+  const step = cents(pair[1]) - cents(pair[0])
   return step > 0 ? 'up' : step < 0 ? 'down' : 'flat'
 }
 
@@ -62,9 +64,11 @@ function plot(ordered: RecurringAmountPoint[]): Plotted[] {
 const toPoints = (list: Plotted[]) => list.map((p) => `${p.x},${p.y}`).join(' ')
 
 function describe(ordered: RecurringAmountPoint[]): string {
-  if (ordered.length === 0) return 'No amount history'
-  const first = formatUsdAbs(ordered[0].amount)
-  const last = formatUsdAbs(ordered[ordered.length - 1].amount)
+  const [head] = ordered
+  const tail = ordered.at(-1)
+  if (!head || !tail) return 'No amount history'
+  const first = formatUsdAbs(head.amount)
+  const last = formatUsdAbs(tail.amount)
   return ordered.length === 1 ? `Amount history: ${last}` : `Amount history from ${first} to ${last}`
 }
 
@@ -82,7 +86,7 @@ export default function RecurringSparkline(props: { history: RecurringAmountPoin
   // segment for the final step. Otherwise one solid line spans the lot.
   const dashedTail = createMemo<[Plotted, Plotted] | null>(() => {
     const all = plotted()
-    return props.stopped && all.length >= 2 ? [all[all.length - 2], all[all.length - 1]] : null
+    return props.stopped ? lastTwo(all) : null
   })
   const solidRun = createMemo(() => {
     const all = plotted()

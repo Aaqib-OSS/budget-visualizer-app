@@ -456,8 +456,8 @@ describe('RecurringSparkline', () => {
     const { svg } = points([{ date: '2026-10-15', amount: 10 }])
     expect(circles(svg)).toHaveLength(1)
     expect(svg.querySelector('polyline')).toBeNull()
-    expect(Number(circles(svg)[0].getAttribute('cx'))).toBeGreaterThan(0)
-    expect(Number.isFinite(Number(circles(svg)[0].getAttribute('cy')))).toBe(true)
+    expect(Number(circles(svg)[0]!.getAttribute('cx'))).toBeGreaterThan(0)
+    expect(Number.isFinite(Number(circles(svg)[0]!.getAttribute('cy')))).toBe(true)
   })
 
   it('draws an empty history without error', () => {
@@ -494,15 +494,15 @@ describe('RecurringSparkline', () => {
   it('scales so a rise climbs and a fall drops (SVG y grows downward)', () => {
     const rise = polylineYs(points(RISE).svg)
     const fall = polylineYs(points(FALL).svg)
-    expect(rise[2]).toBeLessThan(rise[0])
-    expect(fall[2]).toBeGreaterThan(fall[0])
+    expect(rise[2]!).toBeLessThan(rise[0]!)
+    expect(fall[2]!).toBeGreaterThan(fall[0]!)
   })
 
   it.each([
     ['a rise', RISE],
     ['a fall', FALL],
-    ['a flat history', [RISE[0], { ...RISE[1], amount: 10 }]],
-    ['a single entry', [RISE[0]]],
+    ['a flat history', [RISE[0]!, { ...RISE[1]!, amount: 10 }]],
+    ['a single entry', [RISE[0]!]],
     [
       'a steep climb',
       [
@@ -512,11 +512,15 @@ describe('RecurringSparkline', () => {
     ],
   ])('keeps every point, with its radius, inside the viewBox for %s', (_label, history) => {
     const { svg } = points(history)
-    const [, , width, height] = (svg.getAttribute('viewBox') ?? '').split(' ').map(Number)
+    const [, , width = NaN, height = NaN] = (svg.getAttribute('viewBox') ?? '').split(' ').map(Number)
     expect([width, height]).toEqual([80, 24])
     expect(circles(svg).length).toBeGreaterThan(0)
     for (const c of circles(svg)) {
-      const [cx, cy, r] = ['cx', 'cy', 'r'].map((a) => Number(c.getAttribute(a)))
+      const [cx, cy, r] = [c.getAttribute('cx'), c.getAttribute('cy'), c.getAttribute('r')].map(Number) as [
+        number,
+        number,
+        number,
+      ]
       expect(cx - r, c.outerHTML).toBeGreaterThanOrEqual(0)
       expect(cx + r, c.outerHTML).toBeLessThanOrEqual(width)
       expect(cy - r, c.outerHTML).toBeGreaterThanOrEqual(0)
@@ -530,7 +534,7 @@ describe('RecurringSparkline', () => {
     expect(dashed).toHaveLength(1)
     // The solid run keeps every earlier point, the dashed segment joins the last two.
     expect(svg.querySelector('polyline')?.getAttribute('points')?.trim().split(/\s+/)).toHaveLength(2)
-    expect(dashed[0].tagName.toLowerCase()).toBe('line')
+    expect(dashed[0]!.tagName.toLowerCase()).toBe('line')
   })
 
   it('draws a stopped two-point history as a single dashed segment', () => {

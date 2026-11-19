@@ -79,9 +79,7 @@ export function useCategoryTreeSelectDialog(props: {
   const treeNavIndexByValue = createMemo(() => {
     const items = navigableItems()
     const m = new Map<string, number>()
-    for (let i = 0; i < items.length; i++) {
-      m.set(items[i].value, i)
-    }
+    items.forEach((item, i) => m.set(item.value, i))
     return m
   })
 

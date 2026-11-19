@@ -18,7 +18,7 @@ describe('refreshRecurringSeries', () => {
     post.mockResolvedValue({ data: { upserted: 12, deleted: 2 } })
     await expect(refreshRecurringSeries()).resolves.toEqual({ upserted: 12, deleted: 2 })
     expect(post).toHaveBeenCalledTimes(1)
-    expect(post.mock.calls[0][0]).toBe('/recurring/refresh')
+    expect(post.mock.calls[0]![0]).toBe('/recurring/refresh')
   })
 
   it('rethrows the original error when the request fails', async () => {

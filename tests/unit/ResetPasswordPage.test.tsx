@@ -96,11 +96,11 @@ describe('ResetPasswordPage', () => {
     renderPage()
     const [pwToggle, cfToggle] = screen.getAllByRole('button', { name: 'Show password' })
 
-    fireEvent.click(pwToggle)
+    fireEvent.click(pwToggle!)
     expect(pwInput().type).toBe('text')
     expect(cfInput().type).toBe('password')
 
-    fireEvent.click(cfToggle)
+    fireEvent.click(cfToggle!)
     expect(cfInput().type).toBe('text')
   })
 })

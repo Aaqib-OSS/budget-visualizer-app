@@ -25,6 +25,7 @@ import {
   type TriageState,
 } from './createRecurringDerivedData'
 import RecurringAvatar from './RecurringAvatar'
+import { lastTwo } from '@utils/lastTwo'
 
 type LaneState = Exclude<TriageState, null>
 
@@ -90,8 +91,8 @@ function lastPriceStep(s: RecurringSeries): { from: number; to: number } | null 
   const ordered = [...(s.amountHistory ?? [])].sort((a, b) =>
     a.date < b.date ? -1 : a.date > b.date ? 1 : 0,
   )
-  if (ordered.length < 2) return null
-  return { from: ordered[ordered.length - 2].amount, to: ordered[ordered.length - 1].amount }
+  const step = lastTwo(ordered)
+  return step && { from: step[0].amount, to: step[1].amount }
 }
 
 function reasonFor(s: RecurringSeries, state: LaneState): string {

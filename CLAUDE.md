@@ -13,7 +13,7 @@ Or individually:
 ```bash
 bun run lint           # eslint (covers src, tests/unit, tests/e2e, and root configs)
 bun run format:check   # prettier (or `bun run format` to fix)
-bun run typecheck      # tsc -b — builds app, node, unit-test, and e2e projects
+bun run typecheck      # tsc -b — builds app, node, .storybook, unit-test, and e2e projects
 ```
 
 ## CI job names are load-bearing
@@ -71,8 +71,14 @@ Use **`git commit --no-verify`** only when a hook is misbehaving in the agent en
 - **SolidJS** (NOT React) — use `createSignal`, `createMemo`, `createEffect`, `For`, `Show`, etc.
 - **@tanstack/solid-query** for data fetching
 - **@kobalte/core** for UI primitives (Dialog, etc.)
-- **D3** for charts (`createLineChart.ts`, `BudgetCategoryPieChart.tsx`)
+- **D3** for charts (`charts/createLineChart.ts`, and `BudgetCategorySunburst.tsx` / `mountBudgetCategorySunburst.ts` and `BudgetCategoryTreemap.tsx` under `components/transactions/charts/`)
 - **Tailwind CSS** via `@tailwindcss/vite`
+
+## TypeScript strictness
+
+`noUncheckedIndexedAccess` is on: `arr[i]`, `match[1]`, `split(...)[0]` and record lookups are `T | undefined`. In `src/`, handle the miss instead of asserting it away. Destructure and guard (`const [first] = xs; if (!first) …`), use `.at(-1)`, or reach for the helpers: `lastTwo` (`@utils/lastTwo`) for "previous vs latest" steps and `isoDatePart` (`@utils/isoDatePart`) for the date half of an ISO timestamp. Tests may use `!`, since `no-non-null-assertion` is off there and a wrong index still fails the test.
+
+Path aliases live in `tsconfig.paths.json` with `./`-relative targets and no `baseUrl` (deprecated in TS 6, removed in 7). `aliases.node.ts` derives the Vite/Vitest/Storybook aliases from the same file.
 
 ## SolidJS gotchas
 

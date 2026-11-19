@@ -11,7 +11,7 @@ const get = vi.mocked(httpClient.get)
 
 function sentParams(): Record<string, unknown> {
   expect(get).toHaveBeenCalledTimes(1)
-  return get.mock.calls[0][1]?.params
+  return get.mock.calls[0]![1]?.params
 }
 
 describe('fetchRecurringSeries', () => {
@@ -24,7 +24,7 @@ describe('fetchRecurringSeries', () => {
     const rows = [{ id: 1 }, { id: 2 }]
     get.mockResolvedValue({ data: rows })
     await expect(fetchRecurringSeries({})).resolves.toBe(rows)
-    expect(get.mock.calls[0][0]).toBe('/recurring')
+    expect(get.mock.calls[0]![0]).toBe('/recurring')
   })
 
   it('sends no params when no filters are set', async () => {

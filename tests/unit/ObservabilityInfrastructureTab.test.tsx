@@ -49,7 +49,7 @@ describe('InfrastructureTab', () => {
     expect(
       rows.map((r) => r.querySelector('[data-testid="observability-lambda-label"]')?.textContent),
     ).toEqual(['resourceQuerier', 'UserManager', 'Authorizer', 'CSV ingestion'])
-    const physical = within(rows[3]).getByTestId('observability-lambda-function-name')
+    const physical = within(rows[3]!).getByTestId('observability-lambda-function-name')
     expect(physical.textContent).toBe('transactions-bucket-to-db')
     expect(physical.getAttribute('title')).toBe('transactions-bucket-to-db')
     expect(screen.getByTestId('observability-ingestion-card')).toBeTruthy()
@@ -121,8 +121,8 @@ describe('InfrastructureTab', () => {
     )
     for (const row of rows) {
       const cells = row.querySelectorAll('td')
-      expect(cells[3].textContent).toBe('0')
-      expect(cells[5].textContent).toBe('0')
+      expect(cells[3]!.textContent).toBe('0')
+      expect(cells[5]!.textContent).toBe('0')
     }
     const ingestion = screen.getByTestId('observability-ingestion-card')
     expect(within(ingestion).getByText('Dead-letter queue depth').nextElementSibling?.textContent).toBe('0')

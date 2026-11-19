@@ -23,6 +23,7 @@ import {
   transactionsState,
 } from '@stores/transactionsStore'
 import type { DayYear, MonthYear, WeekYear, Year } from '@types'
+import { isoDatePart } from '@utils/isoDatePart'
 
 type TimeframeSelectDescriptor<T> = {
   suffix: string
@@ -127,10 +128,10 @@ export default function TransactionsTableSelects(props: Readonly<{ dataTestId?: 
       label: 'Day',
       viewMode: 'day',
       options: dayOptions,
-      optionValue: (item) => String(item.day).split('T')[0],
-      optionLabel: (item) => formatDayLabel(String(item.day).split('T')[0]),
+      optionValue: (item) => isoDatePart(String(item.day)),
+      optionLabel: (item) => formatDayLabel(isoDatePart(String(item.day))),
       selectedValue: () => transactionsState.selectedDay,
-      selectValue: () => transactionsState.selectedDay.split('T')[0],
+      selectValue: () => isoDatePart(transactionsState.selectedDay),
       onPick: selectDayView,
     }),
   ]
