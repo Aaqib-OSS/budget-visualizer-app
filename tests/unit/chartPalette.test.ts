@@ -78,4 +78,38 @@ describe('resolveCssColorForD3', () => {
   it('uses lastResort when the color cannot be resolved (e.g. oklch in jsdom)', () => {
     expect(resolveCssColorForD3('oklch(0.5 0.1 180)', '#feed00')).toBe('#feed00')
   })
+
+  describe('canvas rasterization fallback', () => {
+    function stubCanvasPixel(pixel: number[]) {
+      const ctx = {
+        clearRect: vi.fn(),
+        fillRect: vi.fn(),
+        fillStyle: '',
+        getImageData: vi.fn(() => ({ data: Uint8ClampedArray.from(pixel) })),
+      }
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
+        ctx as unknown as CanvasRenderingContext2D,
+      )
+      return ctx
+    }
+
+    it('returns the rasterized hex for a color d3 cannot parse', () => {
+      const ctx = stubCanvasPixel([0x12, 0xab, 0x05, 255])
+      expect(resolveCssColorForD3('oklch(0.5 0.1 180)', '#feed00')).toBe('#12ab05')
+      expect(ctx.fillStyle).toBe('oklch(0.5 0.1 180)')
+    })
+
+    it('falls back when the rasterized pixel is fully transparent', () => {
+      stubCanvasPixel([0, 0, 0, 0])
+      expect(resolveCssColorForD3('oklch(0.5 0.1 180)', '#feed00')).toBe('#feed00')
+    })
+
+    it.each([[[]], [[1]], [[1, 2]], [[1, 2, 3]]])(
+      'falls back when the pixel buffer is short: %j',
+      (pixel) => {
+        stubCanvasPixel(pixel)
+        expect(resolveCssColorForD3('oklch(0.5 0.1 180)', '#feed00')).toBe('#feed00')
+      },
+    )
+  })
 })
