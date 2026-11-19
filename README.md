@@ -79,6 +79,10 @@ Open [http://localhost:5173](http://localhost:5173) in the browser (see `vite.co
 Type-checks and builds the app for production into the `dist` folder.<br>
 Solid is bundled in production mode with hashed filenames.
 
+### `bun run analyze:bundle`
+
+Runs the production build with [`rollup-plugin-visualizer`](https://github.com/btd/rollup-plugin-visualizer) enabled (`ANALYZE=true`) and opens an interactive treemap of the bundle, with gzip and brotli sizes, so you can see what each dependency costs. The report is written to `bundle-stats/index.html` (gitignored, and outside `dist/` so it never deploys). With `CI` set, it writes the file without opening a browser.
+
 ### `bun run preview`
 
 Serves the production build locally (useful for checking the built app before deploy).
