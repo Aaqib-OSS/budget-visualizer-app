@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon'
+import { utcDate } from '@utils/utcDate'
 import { TWO_DIGIT_DASH_YEAR_PATTERN } from '@api/helpers/periodValueFormat'
 
 /**
@@ -35,11 +35,5 @@ export function parseDateMMYYYY(input: string) {
     return null
   }
 
-  const dt = DateTime.fromObject({ year: year, month: month, day: 1 }, { zone: 'UTC' })
-
-  if (dt.isValid) {
-    return dt.toJSDate()
-  }
-
-  return null
+  return utcDate(year, month - 1, 1)
 }
