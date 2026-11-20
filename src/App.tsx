@@ -1,30 +1,41 @@
 import { Navigate, Route, Router } from '@solidjs/router'
-import CreateUserPage from '@components/auth/CreateUserPage'
-import ForgotPasswordPage from '@components/auth/ForgotPasswordPage'
-import Login from '@components/auth/Login'
-import ResetPasswordPage from '@components/auth/ResetPasswordPage'
+import { type JSX, lazy, Suspense } from 'solid-js'
 import BudgetVisualizer from '@components/layout/BudgetVisualizer'
 import NavBar from '@components/layout/NavBar'
-import LoanCalculator from '@components/loan/LoanCalculator'
-import MemoEditPage from '@components/memos/forms/MemoEditPage'
-import MemoSummaryPage from '@components/memos/summaries/MemoSummaryPage'
-import MemosTable from '@components/memos/table/MemosTable'
-import BudgetCategoriesPage from '@components/budgetCategories/BudgetCategoriesPage'
-import DataImportPage from '@components/dataImport/DataImportPage'
-import AccountSettingsPage from '@components/settings/AccountSettingsPage'
-import RecurringPage from '@components/recurring/RecurringPage'
-import PendingTransactionsTable from '@components/transactions/pending/PendingTransactionsTable'
-import TransactionEditPage from '@components/transactions/forms/TransactionEditPage'
-import TransactionsTable from '@components/transactions/table/TransactionsTable'
-import TransactionsWithTimeframeSummaryRoute from '@components/transactions/summaries/TransactionsWithTimeframeSummaryRoute'
-import ObservabilityRoute from '@components/observability/ObservabilityRoute'
-import { type JSX } from 'solid-js'
+
+// Each page is its own chunk, fetched on first visit, so the login screen doesn't
+// download the charts, d3 and every other page. The shell (NavBar, BudgetVisualizer)
+// stays in the entry chunk because every authenticated route renders it.
+const CreateUserPage = lazy(() => import('@components/auth/CreateUserPage'))
+const ForgotPasswordPage = lazy(() => import('@components/auth/ForgotPasswordPage'))
+const Login = lazy(() => import('@components/auth/Login'))
+const ResetPasswordPage = lazy(() => import('@components/auth/ResetPasswordPage'))
+const LoanCalculator = lazy(() => import('@components/loan/LoanCalculator'))
+const MemoEditPage = lazy(() => import('@components/memos/forms/MemoEditPage'))
+const MemoSummaryPage = lazy(() => import('@components/memos/summaries/MemoSummaryPage'))
+const MemosTable = lazy(() => import('@components/memos/table/MemosTable'))
+const BudgetCategoriesPage = lazy(() => import('@components/budgetCategories/BudgetCategoriesPage'))
+const DataImportPage = lazy(() => import('@components/dataImport/DataImportPage'))
+const AccountSettingsPage = lazy(() => import('@components/settings/AccountSettingsPage'))
+const RecurringPage = lazy(() => import('@components/recurring/RecurringPage'))
+const PendingTransactionsTable = lazy(
+  () => import('@components/transactions/pending/PendingTransactionsTable'),
+)
+const TransactionEditPage = lazy(() => import('@components/transactions/forms/TransactionEditPage'))
+const TransactionsTable = lazy(() => import('@components/transactions/table/TransactionsTable'))
+const TransactionsWithTimeframeSummaryRoute = lazy(
+  () => import('@components/transactions/summaries/TransactionsWithTimeframeSummaryRoute'),
+)
+const ObservabilityRoute = lazy(() => import('@components/observability/ObservabilityRoute'))
 
 function AppLayout(props: { children?: JSX.Element }) {
   return (
     <>
       <NavBar />
-      {props.children}
+      {/* Covers the public pages (login, register, password reset). Authenticated
+          pages suspend inside BudgetVisualizer's own boundary, so the sidebar
+          stays up while a page chunk loads. */}
+      <Suspense>{props.children}</Suspense>
     </>
   )
 }

@@ -1,8 +1,9 @@
 import type { JSX } from 'solid-js'
 import { A, useLocation, useNavigate } from '@solidjs/router'
-import { createEffect, createSignal, For, Show } from 'solid-js'
+import { createEffect, createSignal, For, Show, Suspense } from 'solid-js'
 import TransactionCreateForm from '@components/transactions/forms/TransactionCreateForm'
 import { Button } from '@components/ui/button'
+import { Skeleton } from '@components/ui/skeleton'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@components/ui/dialog'
 import { authState } from '@stores/authStore'
 import { NAVBAR_APP_HEIGHT_PX } from '@components/layout/NavBar'
@@ -124,7 +125,13 @@ export default function BudgetVisualizer(props: { children?: JSX.Element }) {
               redirect landed — a burst of 401s, each racing the interceptor's own
               `window.location.assign` against this component's `navigate`. */}
           <main class="flex-1 min-w-0">
-            <Show when={authState.isUserAuthenticated}>{props.children}</Show>
+            <Show when={authState.isUserAuthenticated}>
+              {/* Pages are lazy chunks (App.tsx). The router keeps the old page up
+                  while the next one loads, so this only shows on a cold load. */}
+              <Suspense fallback={<Skeleton class="h-64 w-full" data-testid="route-loading" />}>
+                {props.children}
+              </Suspense>
+            </Show>
           </main>
         </div>
       </div>
