@@ -1,4 +1,6 @@
-import { DateTime } from 'luxon'
+import { localIsoDate } from '@utils/localIsoDate'
+
+const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/
 
 /**
  * `<input type="date">` value for a local date. `toISOString()` would give the
@@ -6,11 +8,17 @@ import { DateTime } from 'luxon'
  */
 export function formatLoanDateInput(d: Date): string {
   if (Number.isNaN(d.getTime())) return ''
-  return DateTime.fromJSDate(d).toISODate() ?? ''
+  return localIsoDate(d)
 }
 
 /** Local midnight of a `YYYY-MM-DD` input value; an Invalid Date when empty or malformed. */
 export function parseLoanDateInput(value: string): Date {
-  const dt = DateTime.fromISO(value)
-  return dt.isValid && /^\d{4}-\d{2}-\d{2}$/.test(value) ? dt.toJSDate() : new Date(NaN)
+  const match = ISO_DATE.exec(value)
+  if (!match) return new Date(NaN)
+  const [, y, m, d] = match.map(Number)
+  if (y === undefined || m === undefined || d === undefined) return new Date(NaN)
+
+  const date = new Date(0, 0, 1)
+  date.setFullYear(y, m - 1, d)
+  return date.getMonth() === m - 1 && date.getDate() === d ? date : new Date(NaN)
 }

@@ -1,4 +1,5 @@
-import { DateTime } from 'luxon'
+import * as d3 from 'd3'
+import { parseIsoDateUtc } from '@utils/parseIsoDateUtc'
 import type { Accessor } from 'solid-js'
 import { createMemo } from 'solid-js'
 import { transactionsState } from '@stores/transactionsStore'
@@ -16,10 +17,10 @@ export function createBudgetCategorySummaryTimeframeFromStore(firstDay: Accessor
     if (transactionsState.selectedMonth) return transactionsState.selectedMonth
     const fd = firstDay()
     if (fd) {
-      const dt = DateTime.fromISO(fd, { zone: 'utc' })
-      if (dt.isValid) return dt.toFormat('MM-yyyy')
+      const dt = parseIsoDateUtc(fd)
+      if (dt) return d3.utcFormat('%m-%Y')(dt)
     }
-    return DateTime.now().toFormat('MM-yyyy')
+    return d3.timeFormat('%m-%Y')(new Date())
   })
 
   // Timeframe and date go to the same request, so both come from one resolution

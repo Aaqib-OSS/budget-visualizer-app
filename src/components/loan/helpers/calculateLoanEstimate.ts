@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon'
+import { addMonthsClamped } from '@utils/addMonthsClamped'
 import type { LoanFormType } from '@types'
 
 export type LoanEstimate = {
@@ -29,6 +29,6 @@ export function calculateLoanEstimate(form: LoanFormType): LoanEstimate {
     monthlyPayment,
     totalInterest: totalCost - form.loanAmount,
     totalCost,
-    payoffDate: DateTime.fromJSDate(form.startDate).plus({ months: n }).toJSDate(),
+    payoffDate: addMonthsClamped(form.startDate, n),
   }
 }

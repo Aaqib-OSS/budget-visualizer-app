@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon'
+import { isoWeekStartUtc } from '@utils/isoWeekStartUtc'
 import { devConsole } from '@utils/devConsole'
 import { TWO_DIGIT_DASH_YEAR_PATTERN } from '@api/helpers/periodValueFormat'
 
@@ -38,12 +38,12 @@ export function parseDateIWIYYY(input: string): Date | null {
     return null
   }
 
-  const dt = DateTime.fromObject({ weekYear, weekNumber }, { zone: 'UTC' })
+  const start = isoWeekStartUtc(weekYear, weekNumber)
 
-  if (!dt.isValid) {
-    devConsole('error', dt.invalidReason)
+  if (!start) {
+    devConsole('error', `ISO week-year ${weekYear} has no week ${weekNumber}`)
     return null
   }
 
-  return dt.toJSDate()
+  return start
 }

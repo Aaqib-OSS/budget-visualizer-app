@@ -21,6 +21,15 @@ describe('parseDateIWIYYY', () => {
     expect(result).toBeInstanceOf(Date)
   })
 
+  it('resolves to the UTC Monday of the ISO week', () => {
+    expect(parseDateIWIYYY('10-2024')?.toISOString()).toBe('2024-03-04T00:00:00.000Z')
+    expect(parseDateIWIYYY('01-2025')?.toISOString()).toBe('2024-12-30T00:00:00.000Z')
+  })
+
+  it('returns null for week 53 of a 52-week year', () => {
+    expect(parseDateIWIYYY('53-2024')).toBeNull()
+  })
+
   it('returns null for week 00', () => {
     expect(parseDateIWIYYY('00-2024')).toBeNull()
   })
