@@ -1,6 +1,6 @@
 import { createRoot } from 'solid-js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { AxiosError, AxiosHeaders } from 'axios'
+import { HttpError } from '@api/HttpError'
 import type { Transaction } from '@types'
 
 type Callbacks = { onSuccess: () => void; onError: (err: unknown) => void }
@@ -52,13 +52,7 @@ describe('createTransactionsTableCategoryAssignment', () => {
     const { a, cbs } = setup()
     a.setCategoryDialogOpen(false)
     cbs.onError(
-      new AxiosError('Request failed with status code 422', '422', undefined, undefined, {
-        status: 422,
-        statusText: 'Unprocessable',
-        data: { message: 'Unknown budget category' },
-        headers: {},
-        config: { headers: new AxiosHeaders() },
-      }),
+      new HttpError({ method: 'GET', url: '/x', status: 422, data: { message: 'Unknown budget category' } }),
     )
     expect(a.categoryAssignError()).toBe('Unknown budget category')
     expect(a.mutatingTransactionId()).toBeNull()

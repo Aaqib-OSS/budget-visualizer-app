@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/solid-query'
 import { renderHook } from '@solidjs/testing-library'
 import type { JSX } from 'solid-js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { AxiosError, AxiosHeaders } from 'axios'
+import { HttpError } from '@api/HttpError'
 import type { Memo, MemoUpdateInput } from '@types'
 
 // #89: the memos table writes through `mutateMemo`, so its pending and error
@@ -61,12 +61,11 @@ describe('createMemosTableMutations', () => {
 
   it("surfaces the server's message and clears it on dismiss (#91)", async () => {
     updateMemo.mockRejectedValue(
-      new AxiosError('Request failed with status code 409', '409', undefined, undefined, {
+      new HttpError({
+        method: 'GET',
+        url: '/x',
         status: 409,
-        statusText: 'Conflict',
         data: { message: 'Memo was changed by someone else' },
-        headers: {},
-        config: { headers: new AxiosHeaders() },
       }),
     )
     const m = setup()

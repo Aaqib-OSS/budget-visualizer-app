@@ -1,20 +1,13 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { AxiosError, AxiosHeaders, CanceledError } from 'axios'
+import { HttpError } from '@api/HttpError'
 
 vi.mock('@utils/devConsole', () => ({ devConsole: vi.fn() }))
 
 import { devConsole } from '@utils/devConsole'
 import { queryClient } from '@api/queryClient'
 
-function axiosError(status: number, data?: unknown): AxiosError {
-  const headers = new AxiosHeaders()
-  return new AxiosError('Request failed', 'ERR_BAD_REQUEST', { headers }, undefined, {
-    status,
-    statusText: '',
-    headers,
-    config: { headers },
-    data,
-  })
+function httpError(status: number, data?: unknown): HttpError {
+  return new HttpError({ method: 'GET', url: '/x', status, data })
 }
 
 // The caches are the single place a failed request is logged: fetchers no longer
@@ -30,18 +23,18 @@ describe('queryClient error logging', () => {
   beforeEach(() => vi.mocked(devConsole).mockClear())
 
   it('logs a failed query with the server message', () => {
-    queryOnError(axiosError(409, { message: 'Duplicate memo' }))
+    queryOnError(httpError(409, { message: 'Duplicate memo' }))
     expect(devConsole).toHaveBeenCalledWith('error', '[query]', 'Duplicate memo')
   })
 
   it('logs a failed mutation with the server message', () => {
-    mutationOnError(axiosError(500, { message: 'db down' }))
+    mutationOnError(httpError(500, { message: 'db down' }))
     expect(devConsole).toHaveBeenCalledWith('error', '[mutation]', 'db down')
   })
 
   it.each([
-    ['a 401 (the interceptor redirects)', axiosError(401)],
-    ['a cancellation', new CanceledError()],
+    ['a 401 (the interceptor redirects)', httpError(401)],
+    ['a cancellation', new DOMException('x', 'AbortError')],
   ])('ignores %s', (_label, error) => {
     queryOnError(error)
     mutationOnError(error)

@@ -1,13 +1,13 @@
-import axios from 'axios'
+import { HttpError } from '@api/HttpError'
 
 /**
- * Pulls a human-readable message from an API error (Axios or generic Error).
- * Prefers `response.data.message` from the server, falling back to `error.message`.
+ * Pulls a human-readable message from an API error (`HttpError` or generic Error).
+ * Prefers the JSON body's `message` from the server, falling back to `error.message`.
  * A thrown non-empty string is its own message.
  */
 export function extractApiErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const serverMessage = error.response?.data?.message
+  if (error instanceof HttpError && typeof error.data === 'object' && error.data !== null) {
+    const serverMessage = (error.data as { message?: unknown }).message
     if (typeof serverMessage === 'string' && serverMessage.length > 0) {
       return serverMessage
     }

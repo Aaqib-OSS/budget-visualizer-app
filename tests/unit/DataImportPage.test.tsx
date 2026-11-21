@@ -188,7 +188,7 @@ describe('DataImportPage', () => {
       fireEvent.click(screen.getByTestId('data-import-cancel-button'))
       expect(cancelMock).toHaveBeenCalledOnce()
 
-      // Simulate axios rejecting with an AbortError after cancel(); the page should
+      // Simulate the upload rejecting with an AbortError after cancel(); the page should
       // suppress the error transition because the user cancelled.
       rejectMutation?.(Object.assign(new Error('canceled'), { name: 'CanceledError' }))
 

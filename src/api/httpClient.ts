@@ -1,7 +1,9 @@
-import axios from 'axios'
 import { getBaseApiUrl, initBaseApiUrl } from '@constants'
 import { devConsole } from '@utils/devConsole'
 import { SESSION_TOKEN_KEY } from '@api/sessionStorageKeys'
+import { buildQueryString } from '@api/buildQueryString'
+import { HttpError } from '@api/HttpError'
+import { isAbortError } from '@api/isAbortError'
 
 // Callback-based handler so main.ts can wire in auth store + router
 // without creating circular imports (auth store → httpClient).
@@ -39,79 +41,104 @@ function isAbsoluteUrl(url: string | undefined): boolean {
   return !!url && /^https?:\/\//i.test(url)
 }
 
-export const httpClient = axios.create({
-  baseURL: getBaseApiUrl(),
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
+export type RequestOptions = {
+  /** Query params. `undefined` and `null` values are left out. */
+  params?: object
+  signal?: AbortSignal
+}
+
+export type HttpResponse<T> = { data: T }
+
+let baseURL = getBaseApiUrl()
 
 // In DEV mode, resolve the base URL (checking if local server is running)
-// and update the httpClient before the first real request goes out.
+// before the first real request goes out.
 const baseUrlReady: Promise<void> = initBaseApiUrl().then((resolvedUrl) => {
-  httpClient.defaults.baseURL = resolvedUrl
+  baseURL = resolvedUrl
 })
 
-httpClient.interceptors.request.use(async (config) => {
+/** The JSON body when the response says it is JSON, its raw text otherwise, `undefined` when empty. */
+async function readBody(response: Response): Promise<unknown> {
+  const text = await response.text()
+  if (!text) return undefined
+  return response.headers.get('Content-Type')?.includes('json') ? JSON.parse(text) : text
+}
+
+/**
+ * A 401 from our own API means the session is gone. A failed login is a 401
+ * too, but the login mutation reports that one itself.
+ */
+function handleUnauthorized(method: string, url: string): void {
+  const isLoginAttempt = method === 'POST' && (url === '/login' || url.endsWith('/login'))
+  if (isLoginAttempt || isAbsoluteUrl(url) || !onUnauthorized || handlingUnauthorized) return
+  handlingUnauthorized = true
+  onUnauthorized()
+}
+
+async function request<T>(
+  method: string,
+  url: string,
+  body: unknown,
+  options: RequestOptions = {},
+): Promise<HttpResponse<T>> {
   // Ensure the base URL has been resolved before any request fires
   await baseUrlReady
 
+  const headers = new Headers()
   // Only attach our session token to same-origin API calls. Absolute URLs go
   // somewhere else (e.g. an S3 bucket) and shouldn't receive the Bearer token.
-  if (!isAbsoluteUrl(config.url)) {
+  if (!isAbsoluteUrl(url)) {
     const token = localStorage.getItem(SESSION_TOKEN_KEY)
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`
-    }
+    if (token) headers.set('Authorization', `Bearer ${token}`)
+  }
+  if (body !== undefined) headers.set('Content-Type', 'application/json')
+
+  const fullUrl = `${isAbsoluteUrl(url) ? '' : baseURL}${url}${buildQueryString(options.params)}`
+  devConsole('log', '[httpClient] Request URL:', url)
+  devConsole('log', '[httpClient] Query Params:', options.params)
+
+  let response: Response
+  try {
+    response = await fetch(fullUrl, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: options.signal,
+    })
+  } catch (error) {
+    if (isAbortError(error)) throw error
+    devConsole('error', '[httpClient] Network error for', url, 'with params:', options.params)
+    throw new HttpError({ method, url })
   }
 
-  devConsole('log', '[httpClient] Request URL:', config.url)
-  devConsole('log', '[httpClient] Query Params:', config.params)
+  const data = await readBody(response)
+  if (!response.ok) {
+    devConsole('error', '[httpClient] Error request URL:', url, 'with params:', options.params)
+    if (response.status === 401) handleUnauthorized(method, url)
+    throw new HttpError({ method, url, status: response.status, data })
+  }
 
-  return config
-})
+  devConsole('log', '[httpClient] Response from:', url, 'with params:', options.params)
+  return { data: data as T }
+}
 
-// Add response interceptor to log the actual request URL
-httpClient.interceptors.response.use(
-  (response) => {
-    devConsole(
-      'log',
-      '[httpClient] Response from:',
-      response.config.url,
-      'with params:',
-      response.config.params,
-    )
-    devConsole('log', '[httpClient] Full request URL:', response.request.responseURL)
-    return response
-  },
-  (error) => {
-    if (error.config) {
-      devConsole(
-        'error',
-        '[httpClient] Error request URL:',
-        error.config.url,
-        'with params:',
-        error.config.params,
-      )
-    }
+/**
+ * Response bodies default to `any`, as axios's did. Fetchers that don't name a
+ * type (`httpClient.get('/days')`) relied on that; `unknown` would make each of
+ * them fail to compile.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Untyped = any
 
-    const reqUrl = error.config?.url ?? ''
-    const isLoginAttempt =
-      String(error.config?.method ?? '').toLowerCase() === 'post' &&
-      (reqUrl === '/login' || reqUrl.endsWith('/login'))
-
-    if (
-      axios.isAxiosError(error) &&
-      error.response?.status === 401 &&
-      !isLoginAttempt &&
-      !isAbsoluteUrl(reqUrl) &&
-      onUnauthorized &&
-      !handlingUnauthorized
-    ) {
-      handlingUnauthorized = true
-      onUnauthorized()
-    }
-
-    return Promise.reject(error)
-  },
-)
+/**
+ * The app's API client: `fetch` against the API base URL, with the session's
+ * Bearer token. Resolves `{ data }`; rejects with `HttpError`, or with the
+ * `AbortError` itself when `signal` fires.
+ */
+export const httpClient = {
+  get: <T = Untyped>(url: string, options?: RequestOptions) => request<T>('GET', url, undefined, options),
+  post: <T = Untyped>(url: string, body?: unknown, options?: RequestOptions) =>
+    request<T>('POST', url, body, options),
+  patch: <T = Untyped>(url: string, body?: unknown, options?: RequestOptions) =>
+    request<T>('PATCH', url, body, options),
+}

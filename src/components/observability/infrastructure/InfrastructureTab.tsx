@@ -1,5 +1,5 @@
 import { Match, Show, Switch } from 'solid-js'
-import axios from 'axios'
+import { HttpError } from '@api/HttpError'
 import { Button, Skeleton } from '@components/ui'
 import type useObservabilityMetrics from '@api/hooks/observability/useObservabilityMetrics'
 import ApiGatewayCard from './ApiGatewayCard'
@@ -8,7 +8,7 @@ import IngestionCard from './IngestionCard'
 import RdsCard from './RdsCard'
 import { formatUpdatedAgo } from '@components/observability/helpers/formatUpdatedAgo'
 
-const isForbidden = (error: unknown) => axios.isAxiosError(error) && error.response?.status === 403
+const isForbidden = (error: unknown) => error instanceof HttpError && error.status === 403
 
 /** The page owns the query (Refresh and "Updated" live there); this tab only renders it. */
 export default function InfrastructureTab(props: { query: ReturnType<typeof useObservabilityMetrics> }) {

@@ -1,23 +1,25 @@
 import { describe, expect, it } from 'vitest'
-import { AxiosError } from 'axios'
+import { HttpError } from '@api/HttpError'
 import { extractApiErrorMessage } from '@api/extractApiErrorMessage'
 
 describe('extractApiErrorMessage', () => {
-  it('extracts server message from AxiosError', () => {
-    const error = new AxiosError('Request failed')
-    error.response = {
-      data: { message: 'Unauthorized' },
+  it('extracts server message from HttpError', () => {
+    const error = new HttpError({
+      method: 'POST',
+      url: '/login',
       status: 401,
-      statusText: 'Unauthorized',
-      headers: {},
-      config: error.config!,
-    }
+      data: { message: 'Unauthorized' },
+    })
     expect(extractApiErrorMessage(error)).toBe('Unauthorized')
   })
 
   it('falls back to error.message when no server message', () => {
-    const error = new AxiosError('Network Error')
-    expect(extractApiErrorMessage(error)).toBe('Network Error')
+    expect(extractApiErrorMessage(new HttpError({ method: 'GET', url: '/x' }))).toBe('Network Error')
+  })
+
+  it('falls back to the status line when the body is not JSON', () => {
+    const error = new HttpError({ method: 'GET', url: '/x', status: 502, data: '<html>bad gateway</html>' })
+    expect(extractApiErrorMessage(error)).toBe('Request failed with status code 502')
   })
 
   it('handles generic Error', () => {

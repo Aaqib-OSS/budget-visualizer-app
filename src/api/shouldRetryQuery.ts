@@ -1,4 +1,5 @@
-import axios from 'axios'
+import { HttpError } from '@api/HttpError'
+import { isAbortError } from '@api/isAbortError'
 
 /** Attempts after the first, i.e. 3 requests total in the worst case. */
 export const MAX_QUERY_RETRIES = 2
@@ -13,16 +14,16 @@ export const MAX_QUERY_RETRIES = 2
  */
 export function shouldRetryQuery(failureCount: number, error: unknown): boolean {
   if (failureCount >= MAX_QUERY_RETRIES) return false
-  if (axios.isCancel(error)) return false
+  if (isAbortError(error)) return false
 
-  if (axios.isAxiosError(error)) {
-    const status = error.response?.status
+  if (error instanceof HttpError) {
+    const status = error.status
     // No response — DNS failure, timeout, connection reset. Worth another try.
     if (status === undefined) return true
     return status >= 500
   }
 
-  // Non-Axios rejections come from our own queryFn code (mapping, parsing).
+  // Non-HTTP rejections come from our own queryFn code (mapping, parsing).
   // Those are deterministic, so a retry just repeats the same failure.
   return false
 }

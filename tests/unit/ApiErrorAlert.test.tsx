@@ -1,5 +1,5 @@
 import { render, screen } from '@solidjs/testing-library'
-import { AxiosError, AxiosHeaders } from 'axios'
+import { HttpError } from '@api/HttpError'
 import { describe, expect, it } from 'vitest'
 import ApiErrorAlert from '@components/shared/ApiErrorAlert'
 
@@ -7,13 +7,7 @@ import ApiErrorAlert from '@components/shared/ApiErrorAlert'
 // body, dropping the server's explanation.
 
 function conflict(message: string) {
-  return new AxiosError('Request failed with status code 409', '409', undefined, undefined, {
-    status: 409,
-    statusText: 'Conflict',
-    data: { message },
-    headers: {},
-    config: { headers: new AxiosHeaders() },
-  })
+  return new HttpError({ method: 'GET', url: '/x', status: 409, data: { message } })
 }
 
 describe('ApiErrorAlert', () => {
@@ -23,7 +17,7 @@ describe('ApiErrorAlert', () => {
     ))
     expect(screen.getByTestId('e')).toHaveTextContent('Could not save memo')
     expect(screen.getByTestId('e-message')).toHaveTextContent('Memo name already taken')
-    expect(screen.getByTestId('e')).not.toHaveTextContent('AxiosError')
+    expect(screen.getByTestId('e')).not.toHaveTextContent('HttpError')
   })
 
   it('falls back to the error message, and copes with a non-Error', () => {
