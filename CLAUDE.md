@@ -129,7 +129,7 @@ Set in `@api/queryClient` defaults; don't override per-call without a stated rea
 
 ## Utilities
 
-- **API errors**: render a failed query or mutation with `ApiErrorAlert` (`error={q.isError && q.error}`, a `title` naming what failed). For a string, use `extractApiErrorMessage`. Never use `(err as Error).name` / `.message`: a 4xx then reads "AxiosError" / "Request failed with status code 409" and drops the server's `message`.
+- **API errors**: render a failed query or mutation with `ApiErrorAlert` (`error={q.isError && q.error}`, a `title` naming what failed). For a string, use `extractApiErrorMessage`. Never use `(err as Error).name` / `.message`: a 4xx then reads "HttpError" / "Request failed with status code 409" and drops the server's `message`.
 - **Promises**: `no-floating-promises` (src + tests) and `no-misused-promises` (src) are on. Mark intentional fire-and-forget with `void`, including `onClick={() => void q.refetch()}`. Don't make a `mutate()`-level callback `async`, because TanStack doesn't await it. Chain with `void p.finally(...)` instead.
 - **Currency formatting**: use `formatUsd`, `formatUsdOrDash`, or `formatUsdAbs` from `@utils/formatUsd` — do not create local `Intl.NumberFormat` instances
 - **Budget category path delimiter**: use `BUDGET_CATEGORY_PATH_DELIMITER` from `@api/helpers/convertToTree` (not hardcoded `' - '`)
