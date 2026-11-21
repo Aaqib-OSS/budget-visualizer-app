@@ -119,6 +119,59 @@ describe('httpClient', () => {
       expect(error).toMatchObject({ status: 502, data: '<html>bad gateway</html>' })
     })
 
+    it('keeps a JSON-labelled body that does not parse as raw text', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response('{"truncated":', { status: 200, headers: { 'Content-Type': 'application/json' } }),
+      )
+      await expect(httpClient.get('/t')).resolves.toEqual({ data: '{"truncated":' })
+    })
+
+    it('still routes a 401 with a malformed JSON body to the unauthorized handler', async () => {
+      const handler = vi.fn()
+      setUnauthorizedHandler(handler)
+      fetchMock.mockResolvedValueOnce(
+        new Response('not json', { status: 401, headers: { 'Content-Type': 'application/json' } }),
+      )
+      const error = await httpClient.get('/t').catch((e: unknown) => e)
+      expect(error).toBeInstanceOf(HttpError)
+      expect(error).toMatchObject({ status: 401, data: 'not json' })
+      expect(handler).toHaveBeenCalledOnce()
+    })
+
+    it('turns a body that fails mid-read into a status-less HttpError', async () => {
+      const response = json({ ok: true })
+      vi.spyOn(response, 'text').mockRejectedValueOnce(new TypeError('network error'))
+      fetchMock.mockResolvedValueOnce(response)
+      const error = await httpClient.get('/t').catch((e: unknown) => e)
+      expect(error).toBeInstanceOf(HttpError)
+      expect(error).toMatchObject({ status: undefined, message: 'Network Error' })
+    })
+
+    it('keeps the status when an error body fails mid-read', async () => {
+      const response = json({}, 503)
+      vi.spyOn(response, 'text').mockRejectedValueOnce(new TypeError('network error'))
+      fetchMock.mockResolvedValueOnce(response)
+      await expect(httpClient.get('/t')).rejects.toMatchObject({ status: 503 })
+    })
+
+    it('still routes a 401 whose body fails mid-read to the unauthorized handler', async () => {
+      const handler = vi.fn()
+      setUnauthorizedHandler(handler)
+      const response = json({}, 401)
+      vi.spyOn(response, 'text').mockRejectedValueOnce(new TypeError('network error'))
+      fetchMock.mockResolvedValueOnce(response)
+      await expect(httpClient.get('/t')).rejects.toMatchObject({ status: 401 })
+      expect(handler).toHaveBeenCalledOnce()
+    })
+
+    it('rethrows an abort during the body read unchanged', async () => {
+      const abort = new DOMException('x', 'AbortError')
+      const response = json({ ok: true })
+      vi.spyOn(response, 'text').mockRejectedValueOnce(abort)
+      fetchMock.mockResolvedValueOnce(response)
+      await expect(httpClient.get('/t')).rejects.toBe(abort)
+    })
+
     it('rejects a transport failure with a status-less HttpError', async () => {
       fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'))
       const error = await httpClient.get('/t').catch((e: unknown) => e)

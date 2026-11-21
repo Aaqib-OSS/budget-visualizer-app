@@ -57,11 +57,21 @@ const baseUrlReady: Promise<void> = initBaseApiUrl().then((resolvedUrl) => {
   baseURL = resolvedUrl
 })
 
-/** The JSON body when the response says it is JSON, its raw text otherwise, `undefined` when empty. */
+/**
+ * The JSON body when the response says it is JSON and it parses, its raw text
+ * otherwise, `undefined` when empty. A truncated or mislabelled JSON body comes
+ * back as text, as it did under axios, so a 401 still reaches the handler and a
+ * 5xx still retries instead of surfacing a `SyntaxError`.
+ */
 async function readBody(response: Response): Promise<unknown> {
   const text = await response.text()
   if (!text) return undefined
-  return response.headers.get('Content-Type')?.includes('json') ? JSON.parse(text) : text
+  if (!response.headers.get('Content-Type')?.includes('json')) return text
+  try {
+    return JSON.parse(text) as unknown
+  } catch {
+    return text
+  }
 }
 
 /**
@@ -111,7 +121,16 @@ async function request<T>(
     throw new HttpError({ method, url })
   }
 
-  const data = await readBody(response)
+  let data: unknown
+  try {
+    data = await readBody(response)
+  } catch (error) {
+    if (isAbortError(error)) throw error
+    // The connection dropped while the body was streaming. A 2xx we can't read
+    // is a transport failure; an error status still counts as that status.
+    if (response.ok) throw new HttpError({ method, url })
+    data = undefined
+  }
   if (!response.ok) {
     devConsole('error', '[httpClient] Error request URL:', url, 'with params:', options.params)
     if (response.status === 401) handleUnauthorized(method, url)
