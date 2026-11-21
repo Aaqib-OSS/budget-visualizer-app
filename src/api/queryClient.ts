@@ -1,6 +1,7 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/solid-query'
-import axios from 'axios'
 import { extractApiErrorMessage } from '@api/extractApiErrorMessage'
+import { HttpError } from '@api/HttpError'
+import { isAbortError } from '@api/isAbortError'
 import { shouldRetryQuery } from '@api/shouldRetryQuery'
 import { devConsole } from '@utils/devConsole'
 
@@ -9,9 +10,9 @@ import { devConsole } from '@utils/devConsole'
  * log-and-rethrow `try/catch`; the error propagates here and to the caller.
  */
 function logRequestError(kind: 'query' | 'mutation', error: unknown): void {
-  // A 401 is handled (and redirected) by the httpClient interceptor.
-  if (axios.isAxiosError(error) && error.response?.status === 401) return
-  if (axios.isCancel(error)) return
+  // A 401 is handled (and redirected) by httpClient.
+  if (error instanceof HttpError && error.status === 401) return
+  if (isAbortError(error)) return
   // devConsole, not console: `extractApiErrorMessage` surfaces the server's
   // own message, which has no business in a production console.
   devConsole('error', `[${kind}]`, extractApiErrorMessage(error))

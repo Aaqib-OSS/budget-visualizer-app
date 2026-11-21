@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/solid-query'
-import axios from 'axios'
 import { type Accessor, createSignal, onCleanup } from 'solid-js'
 import { createCsvImport } from '@api/transactions/createCsvImport'
+import { putWithProgress } from '@api/putWithProgress'
 import { invalidateAfterTransactionCreate } from '@api/queryInvalidation'
 import { mutationKeys } from '@api/queryKeys'
 import { scheduleCsvImportFollowUpRefresh } from '@api/transactions/scheduleCsvImportFollowUpRefresh'
@@ -38,16 +38,10 @@ export function useCreateCsvImport(): {
       controller = new AbortController()
       const { signal } = controller
       const { uploadUrl } = await createCsvImport({ filename: file.name, contentType }, { signal })
-      await axios.put(uploadUrl, file, {
+      await putWithProgress(uploadUrl, file, {
         headers: { 'Content-Type': contentType },
         signal,
-        onUploadProgress: (event) => {
-          if (event.total && event.total > 0) {
-            setProgress(Math.min(1, event.loaded / event.total))
-          } else if (typeof event.progress === 'number') {
-            setProgress(event.progress)
-          }
-        },
+        onProgress: setProgress,
       })
       return null
     },

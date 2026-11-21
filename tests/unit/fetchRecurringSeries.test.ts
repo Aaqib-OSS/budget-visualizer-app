@@ -11,7 +11,7 @@ const get = vi.mocked(httpClient.get)
 
 function sentParams(): Record<string, unknown> {
   expect(get).toHaveBeenCalledTimes(1)
-  return get.mock.calls[0]![1]?.params
+  return get.mock.calls[0]![1]?.params as Record<string, unknown>
 }
 
 describe('fetchRecurringSeries', () => {

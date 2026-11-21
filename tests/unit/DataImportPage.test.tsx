@@ -188,9 +188,9 @@ describe('DataImportPage', () => {
       fireEvent.click(screen.getByTestId('data-import-cancel-button'))
       expect(cancelMock).toHaveBeenCalledOnce()
 
-      // Simulate axios rejecting with an AbortError after cancel(); the page should
+      // Simulate the upload rejecting with an AbortError after cancel(); the page should
       // suppress the error transition because the user cancelled.
-      rejectMutation?.(Object.assign(new Error('canceled'), { name: 'CanceledError' }))
+      rejectMutation?.(new DOMException('canceled', 'AbortError'))
 
       await waitFor(() => {
         expect(screen.getByTestId('data-import-drop-zone')).toBeInTheDocument()
@@ -228,7 +228,7 @@ describe('DataImportPage', () => {
       })
 
       // A rejects late — must NOT flip B's UI to error.
-      rejectFns[0]!(Object.assign(new Error('A canceled late'), { name: 'CanceledError' }))
+      rejectFns[0]!(new DOMException('A canceled late', 'AbortError'))
       // Give microtasks a chance to flush.
       await Promise.resolve()
       await Promise.resolve()

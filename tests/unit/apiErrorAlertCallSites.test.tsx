@@ -1,5 +1,5 @@
 import { render, screen } from '@solidjs/testing-library'
-import { AxiosError, AxiosHeaders } from 'axios'
+import { HttpError } from '@api/HttpError'
 import { describe, expect, it, vi } from 'vitest'
 import MemosTableAlerts from '@components/memos/table/MemosTableAlerts'
 import TransactionsTableAlerts from '@components/transactions/table/TransactionsTableAlerts'
@@ -8,12 +8,11 @@ import MemoSummaryTransactionsCard from '@components/memos/summaries/MemoSummary
 // #91: each call site passes its query error to ApiErrorAlert with a title that
 // names what failed, and only while the query is in error.
 
-const serverError = new AxiosError('Request failed with status code 500', '500', undefined, undefined, {
+const serverError = new HttpError({
+  method: 'GET',
+  url: '/x',
   status: 500,
-  statusText: 'Internal Server Error',
   data: { message: 'Database unavailable' },
-  headers: {},
-  config: { headers: new AxiosHeaders() },
 })
 
 describe('ApiErrorAlert call sites', () => {

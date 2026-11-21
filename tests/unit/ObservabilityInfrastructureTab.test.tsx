@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor, within } from '@solidjs/testing-library'
 import { QueryClient, QueryClientProvider } from '@tanstack/solid-query'
-import { AxiosError, type AxiosResponse } from 'axios'
+import { HttpError } from '@api/HttpError'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ObservabilityMetrics } from '@types'
 import { fullMetrics, nullMetrics } from '@components/observability/infrastructure/observabilityStoryFixtures'
@@ -30,7 +30,7 @@ function renderTab() {
 }
 
 function httpError(status: number) {
-  return new AxiosError('failed', 'ERR_BAD_RESPONSE', undefined, undefined, { status } as AxiosResponse)
+  return new HttpError({ method: 'GET', url: '/observability/metrics', status })
 }
 
 describe('InfrastructureTab', () => {

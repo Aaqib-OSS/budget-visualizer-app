@@ -23,7 +23,7 @@ export async function updateTransaction(transaction: TransactionPatch): Promise<
     throw new Error('Transaction ID is required for updates')
   }
 
-  // PATCH JSON body: camelCase keys; Axios JSON-serializes native types (arrays/objects for splits).
+  // PATCH JSON body: camelCase keys; httpClient JSON-serializes native types (arrays/objects for splits).
   const body: Record<string, unknown> = { id: transaction.id }
   const src = transaction as Record<string, unknown>
 

@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/solid-query'
 import { renderHook } from '@solidjs/testing-library'
 import type { JSX } from 'solid-js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { AxiosError, AxiosHeaders } from 'axios'
+import { HttpError } from '@api/HttpError'
 import { queryKeys } from '@api/queryKeys'
 import { BUDGET_CATEGORY_PATH_DELIMITER } from '@api/helpers/convertToTree'
 import type { BudgetCategoryOperation } from '@api/budgetCategories/updateBudgetCategory'
@@ -85,14 +85,13 @@ describe('useBudgetCategoriesPage results', () => {
     expect(page.addingRoot()).toBe(true)
   })
 
-  it("shows the server's message rather than Axios's status line (#91)", async () => {
+  it("shows the server's message rather than the generic status line (#91)", async () => {
     updateBudgetCategory.mockRejectedValueOnce(
-      new AxiosError('Request failed with status code 409', '409', undefined, undefined, {
+      new HttpError({
+        method: 'GET',
+        url: '/x',
         status: 409,
-        statusText: 'Conflict',
         data: { message: 'A category named Food already exists' },
-        headers: {},
-        config: { headers: new AxiosHeaders() },
       }),
     )
     const { page } = setup()

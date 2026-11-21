@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/solid-query'
 import { renderHook as renderSolidHook } from '@solidjs/testing-library'
 import type { JSX } from 'solid-js'
-import { AxiosError, AxiosHeaders } from 'axios'
+import { HttpError } from '@api/HttpError'
 
 const { updateMemo } = vi.hoisted(() => ({ updateMemo: vi.fn() }))
 
@@ -101,13 +101,7 @@ describe('useMemoSummaryTable saving and errors', () => {
 
   it("surfaces the server's message and clears it on dismiss (#91)", async () => {
     updateMemo.mockRejectedValue(
-      new AxiosError('Request failed with status code 400', '400', undefined, undefined, {
-        status: 400,
-        statusText: 'Bad Request',
-        data: { message: 'Unknown budget category' },
-        headers: {},
-        config: { headers: new AxiosHeaders() },
-      }),
+      new HttpError({ method: 'GET', url: '/x', status: 400, data: { message: 'Unknown budget category' } }),
     )
     const { state, dispose } = renderHook()
     state.handleCategorySelect('Nope')

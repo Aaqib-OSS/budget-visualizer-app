@@ -1,23 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { AxiosError, AxiosHeaders, CanceledError } from 'axios'
+import { HttpError } from '@api/HttpError'
 import { MAX_QUERY_RETRIES, shouldRetryQuery } from '@api/shouldRetryQuery'
 
-function axiosErrorWithStatus(status: number): AxiosError {
-  const config = { headers: new AxiosHeaders() }
-  const error = new AxiosError('boom', 'ERR_BAD_RESPONSE', config)
-  error.response = {
-    status,
-    statusText: '',
-    data: null,
-    headers: new AxiosHeaders(),
-    config,
-  }
-  return error
+function httpErrorWithStatus(status: number): HttpError {
+  return new HttpError({ method: 'GET', url: '/x', status })
 }
 
-/** No `response` at all — DNS failure, timeout, connection reset. */
-function transportError(): AxiosError {
-  return new AxiosError('Network Error', 'ERR_NETWORK', { headers: new AxiosHeaders() })
+/** No response at all — DNS failure, timeout, connection reset. */
+function transportError(): HttpError {
+  return new HttpError({ method: 'GET', url: '/x' })
 }
 
 describe('shouldRetryQuery', () => {
@@ -26,18 +17,18 @@ describe('shouldRetryQuery', () => {
   })
 
   it.each([500, 502, 503, 504])('retries %i (server-side, may be transient)', (status) => {
-    expect(shouldRetryQuery(0, axiosErrorWithStatus(status))).toBe(true)
+    expect(shouldRetryQuery(0, httpErrorWithStatus(status))).toBe(true)
   })
 
   it.each([400, 401, 403, 404, 409, 422])('does not retry %i (request is the problem)', (status) => {
-    expect(shouldRetryQuery(0, axiosErrorWithStatus(status))).toBe(false)
+    expect(shouldRetryQuery(0, httpErrorWithStatus(status))).toBe(false)
   })
 
   it('does not retry a cancellation', () => {
-    expect(shouldRetryQuery(0, new CanceledError('aborted'))).toBe(false)
+    expect(shouldRetryQuery(0, new DOMException('aborted', 'AbortError'))).toBe(false)
   })
 
-  it('does not retry non-Axios rejections from our own queryFn', () => {
+  it('does not retry non-HTTP rejections from our own queryFn', () => {
     expect(shouldRetryQuery(0, new TypeError('cannot read property of undefined'))).toBe(false)
     expect(shouldRetryQuery(0, 'a bare string')).toBe(false)
   })
