@@ -66,7 +66,7 @@ Errors live in **one table** so the overview list, chart and detail page treat a
 
 ### Browser capture
 
-- Hooks: `window.onerror`, `unhandledrejection`, a top-level Solid `ErrorBoundary` around the app, the axios response interceptor (5xx and network failures — not 4xx, not cancellations, not the 401 flow), and the global `QueryCache.onError`.
+- Hooks: `window.onerror`, `unhandledrejection`, a top-level Solid `ErrorBoundary` around the app, `httpClient`'s error path (5xx and network failures — not 4xx, not cancellations, not the 401 flow), and the global `QueryCache.onError`.
 - Breadcrumbs: a ring buffer of the last ~20 events — route changes, API requests (method, path template, status, duration), and clicks identified by `data-testid` only (never element text).
 - Release: commit SHA injected at build time.
 - Sending: batched, sent with `fetch(..., { keepalive: true })` or `sendBeacon`, fire-and-forget, deduplicated client-side so a render loop can't flood the endpoint. Only authenticated sessions report (errors on the login/register pages before sign-in are not captured in v1).

@@ -5,7 +5,7 @@ import AlertComponent from '@components/shared/AlertComponent'
 /**
  * The one way to show a failed request or mutation. The caller names what failed
  * (`title`); the body is the server's own `message` when there is one, otherwise the
- * error's. Never title an alert with `error.name`: for a 4xx that reads "AxiosError".
+ * error's. Never title an alert with `error.name`: for a 4xx that reads "HttpError".
  *
  * Renders nothing while `error` is falsy, so `error={query.isError && query.error}`
  * is enough.

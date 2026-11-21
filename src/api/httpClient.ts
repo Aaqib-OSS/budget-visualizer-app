@@ -60,7 +60,7 @@ const baseUrlReady: Promise<void> = initBaseApiUrl().then((resolvedUrl) => {
 /**
  * The JSON body when the response says it is JSON and it parses, its raw text
  * otherwise, `undefined` when empty. A truncated or mislabelled JSON body comes
- * back as text, as it did under axios, so a 401 still reaches the handler and a
+ * back as text, so a 401 still reaches the handler and a
  * 5xx still retries instead of surfacing a `SyntaxError`.
  */
 async function readBody(response: Response): Promise<unknown> {
@@ -142,7 +142,7 @@ async function request<T>(
 }
 
 /**
- * Response bodies default to `any`, as axios's did. Fetchers that don't name a
+ * Response bodies default to `any`. Fetchers that don't name a
  * type (`httpClient.get('/days')`) relied on that; `unknown` would make each of
  * them fail to compile.
  */

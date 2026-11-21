@@ -7,7 +7,8 @@
  * timeout, CORS). `data` is the parsed JSON body when the response was JSON,
  * otherwise its raw text (an API Gateway HTML page, an S3 XML error).
  *
- * The message keeps axios's wording, so fallbacks that surface it read the same.
+ * The message is `Request failed with status code N`, or `Network Error` with no
+ * response, so fallbacks that surface it read the same everywhere.
  */
 export class HttpError extends Error {
   override readonly name = 'HttpError'

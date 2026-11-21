@@ -3,8 +3,8 @@ import { HttpError } from '@api/HttpError'
 import { describe, expect, it } from 'vitest'
 import ApiErrorAlert from '@components/shared/ApiErrorAlert'
 
-// #91: a 4xx used to render as title "AxiosError" with Axios's status line as the
-// body, dropping the server's explanation.
+// #91: a 4xx used to render with the error's class name as the title and the
+// generic status line as the body, dropping the server's explanation.
 
 function conflict(message: string) {
   return new HttpError({ method: 'GET', url: '/x', status: 409, data: { message } })

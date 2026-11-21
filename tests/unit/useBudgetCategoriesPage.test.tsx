@@ -85,7 +85,7 @@ describe('useBudgetCategoriesPage results', () => {
     expect(page.addingRoot()).toBe(true)
   })
 
-  it("shows the server's message rather than Axios's status line (#91)", async () => {
+  it("shows the server's message rather than the generic status line (#91)", async () => {
     updateBudgetCategory.mockRejectedValueOnce(
       new HttpError({
         method: 'GET',

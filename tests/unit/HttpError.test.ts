@@ -3,7 +3,7 @@ import { HttpError } from '@api/HttpError'
 import { isAbortError } from '@api/isAbortError'
 
 describe('HttpError', () => {
-  it('describes a response by its status, in axios wording', () => {
+  it('describes a response by its status', () => {
     const error = new HttpError({ method: 'GET', url: '/x', status: 409, data: { message: 'dup' } })
     expect(error).toBeInstanceOf(Error)
     expect(error.name).toBe('HttpError')
