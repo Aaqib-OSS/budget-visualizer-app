@@ -1,10 +1,17 @@
-import { DateTime } from 'luxon'
+import * as d3 from 'd3'
+import { isoWeekStartUtc } from '@utils/isoWeekStartUtc'
+import { parseIsoDateUtc } from '@utils/parseIsoDateUtc'
+import { utcDate } from '@utils/utcDate'
+
+const formatDay = d3.utcFormat('%a, %b %-d, %Y')
+const formatMonthDay = d3.utcFormat('%b %-d')
+const formatMonthYear = d3.utcFormat('%B %Y')
+const DAY_MS = 86_400_000
 import type { ViewMode } from '@types'
 
 export function formatDayLabel(dayIso: string): string {
-  const dt = DateTime.fromISO(dayIso, { zone: 'utc' })
-  if (!dt.isValid) return dayIso
-  return dt.toFormat('ccc, LLL d, yyyy')
+  const dt = parseIsoDateUtc(dayIso)
+  return dt ? formatDay(dt) : dayIso
 }
 
 export function formatWeekLabel(weekYear: string): string {
@@ -15,10 +22,10 @@ export function formatWeekLabel(weekYear: string): string {
   const year = Number(yearStr)
   if (!Number.isFinite(week) || !Number.isFinite(year)) return weekYear
 
-  const start = DateTime.fromObject({ weekYear: year, weekNumber: week }, { zone: 'utc' })
-  if (!start.isValid) return weekYear
-  const end = start.plus({ days: 6 })
-  return `${start.toFormat('LLL d')} – ${end.toFormat('LLL d')}, ${start.year}`
+  const start = isoWeekStartUtc(year, week)
+  if (!start) return weekYear
+  const end = new Date(start.getTime() + 6 * DAY_MS)
+  return `${formatMonthDay(start)} – ${formatMonthDay(end)}, ${start.getUTCFullYear()}`
 }
 
 export function formatMonthLabel(monthYear: string): string {
@@ -29,9 +36,8 @@ export function formatMonthLabel(monthYear: string): string {
   const year = Number(yearStr)
   if (!Number.isFinite(month) || !Number.isFinite(year)) return monthYear
 
-  const dt = DateTime.fromObject({ year, month }, { zone: 'utc' })
-  if (!dt.isValid) return monthYear
-  return dt.toFormat('LLLL yyyy')
+  if (!Number.isInteger(month) || !Number.isInteger(year) || month < 1 || month > 12) return monthYear
+  return formatMonthYear(utcDate(year, month - 1, 1))
 }
 
 export function formatYearLabel(year: string): string {

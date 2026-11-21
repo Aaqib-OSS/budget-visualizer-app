@@ -26,8 +26,16 @@ describe('formatPeriodLabels', () => {
       expect(label).toContain('–')
     })
 
+    it('formats Monday through Sunday', () => {
+      expect(formatWeekLabel('10-2024')).toBe('Mar 4 – Mar 10, 2024')
+    })
+
     it('returns input for invalid format', () => {
       expect(formatWeekLabel('bad')).toBe('bad')
+    })
+
+    it('returns input for week 53 of a 52-week year', () => {
+      expect(formatWeekLabel('53-2024')).toBe('53-2024')
     })
   })
 

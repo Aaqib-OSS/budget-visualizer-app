@@ -1,6 +1,8 @@
 import type { JSX } from 'solid-js'
 import { createEffect, createMemo, createSignal, Show } from 'solid-js'
-import { DateTime } from 'luxon'
+import { localIsoDate } from '@utils/localIsoDate'
+import { isoDatePart } from '@utils/isoDatePart'
+import { utcDate } from '@utils/utcDate'
 import { parseDateIWIYYY } from '@api/helpers/parseDateIWIYYY'
 import { parseDateMMYYYY } from '@api/helpers/parseDateMMYYYY'
 import { useDailyTotalAmountDebit } from '@api/hooks/timeUnits/days/useDailyTotalAmountDebit'
@@ -30,16 +32,16 @@ export default function DailyIntervalLineChart(props: {
     if (transactionsState.selectedWeek) {
       const weekStart = parseDateIWIYYY(transactionsState.selectedWeek)
       if (weekStart) {
-        const end = DateTime.fromJSDate(weekStart, { zone: 'utc' }).plus({ days: 6 })
-        return end.toISODate()
+        const end = utcDate(weekStart.getUTCFullYear(), weekStart.getUTCMonth(), weekStart.getUTCDate() + 6)
+        return isoDatePart(end.toISOString())
       }
       return null
     }
     if (transactionsState.selectedMonth) {
       const monthStart = parseDateMMYYYY(transactionsState.selectedMonth)
       if (monthStart) {
-        const end = DateTime.fromJSDate(monthStart, { zone: 'utc' }).endOf('month')
-        return end.toISODate()
+        const end = utcDate(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 0)
+        return isoDatePart(end.toISOString())
       }
       return null
     }
@@ -47,13 +49,14 @@ export default function DailyIntervalLineChart(props: {
       return `${transactionsState.selectedYear}-12-31`
     }
     if (transactionsState.viewMode === 'memo') {
-      return DateTime.now().toISODate()
+      return localIsoDate(new Date())
     }
     // After clearing a filter, show nothing
     if (everHadFilter()) return null
     // Default on initial load
     if (props.firstDay) return props.firstDay
-    return DateTime.now().minus({ months: 1 }).endOf('month').toISODate()
+    const now = new Date()
+    return localIsoDate(new Date(now.getFullYear(), now.getMonth(), 0))
   })
 
   const intervalForView = createMemo(() => {
