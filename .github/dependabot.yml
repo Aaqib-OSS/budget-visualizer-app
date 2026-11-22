@@ -14,3 +14,16 @@ updates:
     groups:
       github-actions:
         patterns: ['*']
+
+  # App dependencies from bun.lock. Minor and patch bumps share one weekly PR for the same
+  # serial-rebase reason as above. Majors stay one PR per package, so a breaking bump can't
+  # hold the routine ones hostage. Security updates are separate: Dependabot opens those as
+  # soon as an advisory lands, ungrouped, because the group only applies to version updates.
+  - package-ecosystem: bun
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      bun-minor-and-patch:
+        applies-to: version-updates
+        update-types: [minor, patch]
