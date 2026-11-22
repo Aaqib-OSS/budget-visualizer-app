@@ -36,3 +36,12 @@ updates:
       # components, a syntax error that breaks build-storybook. Pinned to 10.5.2 until fixed.
       - dependency-name: storybook-solidjs-vite
         versions: ['10.7.x']
+      # TypeScript 7 is the native (Go) compiler and ships without the JS compiler API.
+      # typescript-eslint and Storybook's docgen both read it (`ts.ModuleKind`,
+      # `ts.JsxEmit`) and crash. Lift once both support TS 7.
+      - dependency-name: typescript
+        versions: ['>=7.0.0']
+      # These types describe the Node runtime, which .nvmrc pins to 24. A newer major
+      # types APIs that don't exist at runtime. Bump the major alongside .nvmrc.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
