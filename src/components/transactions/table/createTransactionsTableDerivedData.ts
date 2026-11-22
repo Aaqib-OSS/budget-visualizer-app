@@ -51,7 +51,6 @@ export function createTransactionsTableDerivedData() {
    */
   const flattenedData = createMemo(() => loadedPages().flat())
 
-  // eslint-disable-next-line solid/reactivity -- flattenedData is read inside createTransactionsTableChartSlice memos
   const chart = createTransactionsTableChartSlice(flattenedData)
 
   // Server aggregates over the table's whole filter for the summary cards, which only

@@ -256,8 +256,7 @@ export interface Year {
 }
 
 export type BudgetCategoryState =
-  | { mode: 'single'; categoryId: string | null }
-  | { mode: 'split'; splits: SplitBudgetCategory[] }
+  { mode: 'single'; categoryId: string | null } | { mode: 'split'; splits: SplitBudgetCategory[] }
 
 export interface SplitBudgetCategory {
   id: string

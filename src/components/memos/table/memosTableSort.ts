@@ -1,11 +1,7 @@
 import type { Memo } from '@types'
 
 export type MemosTableSortKey =
-  | 'name'
-  | 'transactions_count'
-  | 'ambiguous'
-  | 'budget_category'
-  | 'total_amount_debit'
+  'name' | 'transactions_count' | 'ambiguous' | 'budget_category' | 'total_amount_debit'
 
 export type MemosTableSortDir = 'asc' | 'desc'
 
