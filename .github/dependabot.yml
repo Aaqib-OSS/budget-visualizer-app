@@ -24,6 +24,13 @@ updates:
     schedule:
       interval: weekly
     groups:
+      # vitest refuses to run beside a different @vitest/* version ("Running mixed versions
+      # is not supported"), so solo major bumps of either fail CI. Majors move together;
+      # minors and patches already share the group below.
+      vitest-major:
+        applies-to: version-updates
+        patterns: ['vitest', '@vitest/*']
+        update-types: [major]
       bun-minor-and-patch:
         applies-to: version-updates
         update-types: [minor, patch]
