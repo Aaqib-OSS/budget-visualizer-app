@@ -113,9 +113,10 @@ jobs:
     # Run in the official Playwright image: browsers + system deps are baked in, so
     # there's no runtime `playwright install` (its browser download reliably hung on
     # hosted runners). The image tag MUST match the exact @playwright/test version in
-    # package.json.
+    # package.json. Dependabot can't bump this image, so .github/dependabot.yml ignores
+    # @playwright/test: bump both by hand, together.
     container:
-      image: mcr.microsoft.com/playwright:v1.61.0-noble
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

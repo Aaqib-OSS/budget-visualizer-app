@@ -27,3 +27,12 @@ updates:
       bun-minor-and-patch:
         applies-to: version-updates
         update-types: [minor, patch]
+    ignore:
+      # The E2E job runs in mcr.microsoft.com/playwright:vX.Y.Z-noble, whose tag must equal
+      # this exact version. Dependabot can't bump a workflow `container:` image, so a solo
+      # package bump strands the tests without browsers. Bump both together by hand.
+      - dependency-name: '@playwright/test'
+      # 10.7.x's docgen emits `default.__docgenInfo = …` for `export default function`
+      # components, a syntax error that breaks build-storybook. Pinned to 10.5.2 until fixed.
+      - dependency-name: storybook-solidjs-vite
+        versions: ['10.7.x']
