@@ -2,20 +2,25 @@ import type { Preview } from 'storybook-solidjs-vite'
 import { withThemeByClassName } from '@storybook/addon-themes'
 import { initialGlobals as themeInitialGlobals } from '@storybook/addon-themes/preview'
 import { QueryClient, QueryClientProvider } from '@tanstack/solid-query'
-import { initialize, mswLoader } from 'msw-storybook-addon'
+import { setupWorker } from 'msw/browser'
+import { mswLoader } from 'msw-storybook-addon/csf3'
 import { createJSXDecorator } from 'storybook-solidjs-vite'
 import '../src/index.css'
-
-initialize({
-  onUnhandledRequest: 'bypass',
-})
 
 const preview: Preview = {
   initialGlobals: {
     ...themeInitialGlobals,
     theme: 'dark',
   },
-  loaders: [mswLoader],
+  // Our own setup rather than the addon's default: that one still passes msw 2's
+  // `onUnhandledRequest`, which msw 3 ignores, so every unmocked request would warn.
+  loaders: [
+    mswLoader(async () => {
+      const worker = setupWorker()
+      await worker.start({ quiet: true, onUnhandledFrame: 'bypass' })
+      return worker
+    }),
+  ],
   decorators: [
     withThemeByClassName({
       themes: { light: '', dark: 'dark' },
