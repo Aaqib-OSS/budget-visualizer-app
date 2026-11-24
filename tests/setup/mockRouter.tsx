@@ -49,7 +49,9 @@ export function mockRouterModule() {
         href={props.href}
         class={props.class}
         data-testid={props['data-testid']}
-        aria-current={new URL(props.href, 'http://localhost').pathname === routerState.pathname ? 'page' : undefined}
+        aria-current={
+          new URL(props.href, 'http://localhost').pathname === routerState.pathname ? 'page' : undefined
+        }
       >
         {props.children}
       </a>

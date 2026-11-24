@@ -48,8 +48,8 @@ export default function EmptyState(props: { onFileChosen: (file: File) => void }
         </div>
         <div class="text-[19px] font-semibold tracking-tight">Drop your CSV file here</div>
         <div class="mt-1.5 max-w-[420px] text-sm text-muted-foreground">
-          Name it for the statement month, for example{' '}
-          <span class="font-mono tabular-nums">2026_04.csv</span>.
+          Name it for the statement month, for example <span class="font-mono tabular-nums">2026_04.csv</span>
+          .
         </div>
 
         <div class="my-5 flex flex-wrap justify-center gap-2">
@@ -67,12 +67,7 @@ export default function EmptyState(props: { onFileChosen: (file: File) => void }
           </RulePill>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          data-testid="data-import-browse-button"
-          onClick={openPicker}
-        >
+        <Button type="button" variant="outline" data-testid="data-import-browse-button" onClick={openPicker}>
           <Icon name="file" size={14} stroke={1.9} />
           Browse files
         </Button>
