@@ -22,6 +22,7 @@ export interface AuthTextFieldProps {
 
 export function AuthTextField(props: AuthTextFieldProps) {
   const inputType = () => props.inputType ?? 'text'
+  const errorId = () => `${props.id}-error`
 
   return (
     <div class="flex flex-col gap-1.5">
@@ -53,6 +54,7 @@ export function AuthTextField(props: AuthTextFieldProps) {
           onBlur={() => props.onBlur()}
           disabled={props.disabled}
           aria-invalid={props.hasError}
+          aria-describedby={props.hasError && props.errorMessage ? errorId() : undefined}
           data-testid={props.testid}
           class="w-full rounded-xl border bg-input-background px-4 py-3 pl-11 text-foreground placeholder:text-muted-foreground/60 transition-all duration-200 outline-none disabled:cursor-not-allowed disabled:opacity-50"
           classList={{
@@ -67,7 +69,7 @@ export function AuthTextField(props: AuthTextFieldProps) {
       </div>
 
       <Show when={props.hasError && props.errorMessage}>
-        <p role="alert" class="flex items-start gap-1.5 text-destructive text-[13px]">
+        <p id={errorId()} role="alert" class="flex items-start gap-1.5 text-destructive text-[13px]">
           <AlertCircle class="h-3.5 w-3.5 mt-px shrink-0" />
           {props.errorMessage}
         </p>

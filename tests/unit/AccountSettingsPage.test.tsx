@@ -1,4 +1,4 @@
-import { render, screen, within } from '@solidjs/testing-library'
+import { fireEvent, render, screen, within } from '@solidjs/testing-library'
 import { QueryClient, QueryClientProvider } from '@tanstack/solid-query'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { routerState, resetRouterState } from '../setup/mockRouter'
@@ -37,9 +37,18 @@ describe('AccountSettingsPage', () => {
 
   it('opens on the security section by default', () => {
     renderPage()
+    const securityLinks = screen.getAllByRole('link', { name: 'Security' })
+    const profileLinks = screen.getAllByRole('link', { name: 'Profile' })
+    expect(securityLinks).toHaveLength(2)
+    expect(profileLinks).toHaveLength(2)
+    expect(securityLinks.every((link) => link.getAttribute('aria-current') === 'page')).toBe(true)
+    expect(profileLinks.every((link) => link.getAttribute('aria-current') !== 'page')).toBe(true)
     expect(screen.getByText('Change password')).toBeInTheDocument()
     expect(screen.getByTestId('change-password-submit')).toBeInTheDocument()
     expect(screen.queryByText('Personal information')).toBeNull()
+
+    fireEvent.click(profileLinks[0]!)
+    expect(routerState.navigate).toHaveBeenCalledExactlyOnceWith('/budget-visualizer/account?section=profile')
   })
 
   describe('profile section', () => {
@@ -50,6 +59,10 @@ describe('AccountSettingsPage', () => {
     it('shows the full name in the profile card and the sidebar', () => {
       setUser({ firstName: 'Kyle', lastName: 'Reaves', username: 'kreaves', email: 'k@example.com' })
       renderPage()
+      const profileLinks = screen.getAllByRole('link', { name: 'Profile' })
+      const securityLinks = screen.getAllByRole('link', { name: 'Security' })
+      expect(profileLinks.every((link) => link.getAttribute('aria-current') === 'page')).toBe(true)
+      expect(securityLinks.every((link) => link.getAttribute('aria-current') !== 'page')).toBe(true)
 
       const sidebar = screen.getByRole('complementary')
       expect(within(sidebar).getByText('Kyle Reaves')).toBeInTheDocument()
