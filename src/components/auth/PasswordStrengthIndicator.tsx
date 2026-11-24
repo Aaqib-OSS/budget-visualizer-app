@@ -3,6 +3,7 @@ import { Check } from 'lucide-solid'
 import { REQUIREMENTS, SEG_COLORS, LABEL_COLORS, type Strength } from './passwordStrength'
 
 interface PasswordStrengthIndicatorProps {
+  id: string
   strength: Strength
   showRequirements: boolean
 }
@@ -44,7 +45,7 @@ export function PasswordStrengthIndicator(props: PasswordStrengthIndicatorProps)
       </Show>
 
       <Show when={props.showRequirements}>
-        <div class="grid grid-cols-2 gap-x-4 gap-y-1.5">
+        <div id={props.id} class="grid grid-cols-2 gap-x-4 gap-y-1.5">
           <For each={REQUIREMENTS}>
             {(req) => (
               <span
